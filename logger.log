@@ -1,1 +1,9 @@
 {"level":"error","message":"WHERE parameter \"name\" has invalid \"undefined\" value","service":"user-service","timestamp":"2025-03-24T12:10:23.889Z"}
+{"level":"error","message":"Unknown column 'user.sort' in 'where clause'","service":"user-service","timestamp":"2025-03-25T10:41:06.971Z"}
+{"level":"error","message":"Unknown column 'user.name' in 'order clause'","service":"user-service","timestamp":"2025-03-25T10:42:28.537Z"}
+{"level":"error","message":"Unknown column 'user.name' in 'order clause'","service":"user-service","timestamp":"2025-03-25T10:42:29.489Z"}
+{"level":"error","message":"Unknown column 'user.name' in 'order clause'","service":"user-service","timestamp":"2025-03-25T10:42:30.105Z"}
+{"level":"error","message":"Unknown column 'user.name' in 'order clause'","service":"user-service","timestamp":"2025-03-25T10:42:30.609Z"}
+{"level":"error","message":"Unknown column 'user.name' in 'order clause'","service":"user-service","timestamp":"2025-03-25T10:42:31.012Z"}
+{"level":"error","message":"Unknown column 'user.name' in 'order clause'","service":"user-service","timestamp":"2025-03-25T10:42:31.454Z"}
+{"level":"error","message":"Unknown column 'user.name' in 'order clause'","service":"user-service","timestamp":"2025-03-25T10:42:32.373Z"}

@@ -24,6 +24,10 @@ const User = db.define("user", {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  year: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
   status: {
     type: DataTypes.STRING,
     allowNull: false,

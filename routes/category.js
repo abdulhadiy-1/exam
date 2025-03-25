@@ -13,9 +13,13 @@ route.get("/", async (req, res) => {
     let page = Number(req.query.page) || 1;
     let offset = limit * (page - 1);
     let search = req.query.search || "";
+    let sort = ["ASC", "DESC"].includes(req.query.sort?.toUpperCase())
+      ? req.query.sort.toUpperCase()
+      : "ASC";
 
     const categories = await Category.findAndCountAll({
       where: { name: { [Op.like]: `%${search}%` } },
+      order: [["name", sort]],
       limit,
       offset,
     });
@@ -23,7 +27,7 @@ route.get("/", async (req, res) => {
     res.json({ total: categories.count, data: categories.rows });
     logger.info("Получены все категории");
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(600).json({ message: error.message });
     logger.error(error.message);
   }
 });
@@ -31,12 +35,13 @@ route.get("/", async (req, res) => {
 route.get("/:id", async (req, res) => {
   try {
     const category = await Category.findByPk(req.params.id);
-    if (!category) return res.status(404).json({ message: "Категория не найдена" });
+    if (!category)
+      return res.status(404).json({ message: "Категория не найдена" });
 
     res.json(category);
     logger.info("Получена категория по id");
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(600).json({ message: error.message });
     logger.error(error.message);
   }
 });
@@ -55,13 +60,14 @@ route.post("/", Middleware, RoleMiddleware(["admin"]), async (req, res) => {
     }
 
     const { error } = categoryPostSchema.validate({ name, image });
-    if (error) return res.status(400).json({ message: error.details[0].message });
+    if (error)
+      return res.status(400).json({ message: error.details[0].message });
 
     const newCategory = await Category.create({ name, image });
     res.json(newCategory);
     logger.info("Категория создана");
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(600).json({ message: error.message });
     logger.error(error.message);
   }
 });
@@ -71,35 +77,48 @@ const categoryPatchSchema = Joi.object({
   image: Joi.string().min(2).optional(),
 });
 
-route.patch("/:id", Middleware, RoleMiddleware(["admin", "super-admin"]), async (req, res) => {
-  try {
-    const category = await Category.findByPk(req.params.id);
-    if (!category) return res.status(404).json({ message: "Категория не найдена" });
+route.patch(
+  "/:id",
+  Middleware,
+  RoleMiddleware(["admin", "super-admin"]),
+  async (req, res) => {
+    try {
+      const category = await Category.findByPk(req.params.id);
+      if (!category)
+        return res.status(404).json({ message: "Категория не найдена" });
 
-    const { error } = categoryPatchSchema.validate(req.body);
-    if (error) return res.status(400).json({ message: error.details[0].message });
+      const { error } = categoryPatchSchema.validate(req.body);
+      if (error)
+        return res.status(400).json({ message: error.details[0].message });
 
-    await category.update(req.body);
-    res.json(category);
-    logger.info("Категория изменена");
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-    logger.error(error.message);
+      await category.update(req.body);
+      res.json(category);
+      logger.info("Категория изменена");
+    } catch (error) {
+      res.status(600).json({ message: error.message });
+      logger.error(error.message);
+    }
   }
-});
+);
 
-route.delete("/:id", Middleware, RoleMiddleware(["admin"]), async (req, res) => {
-  try {
-    const category = await Category.findByPk(req.params.id);
-    if (!category) return res.status(404).json({ message: "Категория не найдена" });
+route.delete(
+  "/:id",
+  Middleware,
+  RoleMiddleware(["admin"]),
+  async (req, res) => {
+    try {
+      const category = await Category.findByPk(req.params.id);
+      if (!category)
+        return res.status(404).json({ message: "Категория не найдена" });
 
-    await category.destroy();
-    res.json({ message: "Категория удалена" });
-    logger.info("Категория удалена");
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-    logger.error(error.message);
+      await category.destroy();
+      res.json({ message: "Категория удалена" });
+      logger.info("Категория удалена");
+    } catch (error) {
+      res.status(600).json({ message: error.message });
+      logger.error(error.message);
+    }
   }
-});
+);
 
 module.exports = route;

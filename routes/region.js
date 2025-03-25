@@ -11,19 +11,23 @@ route.get("/", async (req, res) => {
     let page = Number(req.query.page) || 1;
     let offset = limit * (page - 1);
     let search = req.query.search || "";
+    let sort = ["ASC", "DESC"].includes(req.query.sort?.toUpperCase())
+    ? req.query.sort.toUpperCase()
+    : "ASC";
     const regions = await Region.findAndCountAll({
       where: {
         name: {
           [Op.like]: `%${search}%`,
         },
       },
+      order: [["name", sort]],
       limit: limit,
       offset: offset,
     });
     res.json({ total: regions.count, data: regions.rows });
     logger.info("Получены все регионы");
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(600).json({ message: error.message });
     logger.error(error.message);
   }
 });
@@ -38,7 +42,7 @@ route.get("/:id", async (req, res) => {
     res.json(region);
     logger.info("Получен регион по id");
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(600).json({ message: error.message });
     logger.error(error.message);
   }
 });
@@ -62,7 +66,7 @@ route.post("/", async (req, res) => {
     res.json(newRegion);
     logger.info("Регион создан");
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(600).json({ message: error.message });
     logger.error(error.message);
   }
 });
@@ -87,7 +91,7 @@ route.patch("/:id", async (req, res) => {
     res.json(region);
     logger.info("Регион изменен");
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(600).json({ message: error.message });
     logger.error(error.message);
   }
 });
@@ -103,7 +107,7 @@ route.delete("/:id", async (req, res) => {
     res.json({ message: "Регион удален" });
     logger.info("Регион удален");
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(600).json({ message: error.message });
     logger.error(error.message);
   }
 });

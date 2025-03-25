@@ -7,10 +7,12 @@ const bcrypt = require("bcrypt");
 const { totp } = require("otplib");
 const nodemailer = require("nodemailer");
 const Region = require("../models/region");
+const jwt = require("jsonwebtoken");
 const {
   generateAccessToken,
   generateRefreshToken,
 } = require("../middlewares/genToken");
+const { ReMiddleware } = require("../middlewares/auth");
 
 totp.options = {
   step: 300,
@@ -41,7 +43,7 @@ async function sendMail(email, otp) {
 route.get("/me", async (req, res) => {
   try {
     const token = req.header("Authorization")?.split(" ")[1];
-    if (!authHeader) {
+    if (!token) {
       return res.status(401).json({ message: "Unauthorized" });
     }
     let decoded;
@@ -63,7 +65,7 @@ route.get("/me", async (req, res) => {
     res.json(user);
     logger.info("User info sent!");
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(600).json({ message: error.message });
     logger.error(error.message);
   }
 });
@@ -82,7 +84,7 @@ route.post("/send-otp", async (req, res) => {
     res.json({ message: `Otp sent to ${email}!` });
     logger.info("Otp sent!");
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(600).json({ message: error.message });
     logger.error(error.message);
   }
 });
@@ -104,12 +106,13 @@ route.post("/verify", async (req, res) => {
     res.json({ message: "User verified!" });
     logger.info("User verified!");
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(600).json({ message: error.message });
     logger.error(error.message);
   }
 });
 
 route.post("/register", async (req, res) => {
+  let newYear = new Date().getFullYear();
   const schema = Joi.object({
     fullName: Joi.string().min(2).max(55).required(),
     email: Joi.string().email().required(),
@@ -118,6 +121,11 @@ route.post("/register", async (req, res) => {
       .pattern(/^\+\d{12}$/)
       .required(),
     role: Joi.string().valid("admin", "user", "super-admin").optional(),
+    regionId: Joi.number().required(),
+    year: Joi.number()
+      .min(newYear - 149)
+      .max(newYear)
+      .required(),
   });
 
   let role = req.body.role || "user";
@@ -125,7 +133,11 @@ route.post("/register", async (req, res) => {
   if (error) {
     return res.status(400).json({ message: error.details[0].message });
   }
-
+  if (req.body.year > newYear - 18) {
+    return res
+      .status(400)
+      .json({ message: "You must be at least 18 years old" });
+  }
   const { email, password } = req.body;
   if (!req.body.regionId) {
     return res.status(400).json({ message: "RegionId is required" });
@@ -154,7 +166,7 @@ route.post("/register", async (req, res) => {
     res.json({ newUser, message: `User created, Otp sent to ${email}!` });
     logger.info("User created!");
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(600).json({ message: error.message });
     logger.error(error.message);
   }
 });
@@ -181,7 +193,46 @@ route.post("/login", async (req, res) => {
     res.json({ message: `you logged`, AccessToken, RefreshToken });
     logger.info("User logged in!");
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(600).json({ message: error.message });
+    logger.error(error.message);
+  }
+});
+
+route.post("/change-password", async (req, res) => {
+  try {
+    let { email, password, newPassword } = req.body;
+    let user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res
+        .status(404)
+        .json({ message: "Пользователь с таким email не найден" });
+    }
+    let isValid = await bcrypt.compare(password, user.password);
+    if (!isValid) {
+      return res.status(400).json({ message: "Неверный пароль" });
+    }
+    let hash = await bcrypt.hash(newPassword, 10);
+    await user.update({ password: hash });
+    res.json({ message: "Password changed!" });
+    logger.info("Password changed!");
+  } catch (error) {
+    res.status(600).json({ message: error.message });
+    logger.error(error.message);
+  }
+});
+
+route.post("/refresh-token", ReMiddleware, async (req, res) => {
+  try {
+    const id = req.user;
+    let user = await User.findByPk(id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    let AccessToken = generateAccessToken(user);
+    res.json({ AccessToken });
+    logger.info("Token refreshed!");
+  } catch (error) {
+    res.status(600).json({ message: error.message });
     logger.error(error.message);
   }
 });

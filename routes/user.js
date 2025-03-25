@@ -17,7 +17,9 @@ route.get("/", Middleware, RoleMiddleware(["admin"]), async (req, res) => {
     let phone = req.query.phone || "";
     let role = req.query.role || "";
     let status = req.query.status || "";
-
+    let sort = ["ASC", "DESC"].includes(req.query.sort?.toUpperCase())
+    ? req.query.sort.toUpperCase()
+    : "ASC";
     let where = {};
     if (name) where.fullName = { [Op.like]: `%${name}%` };
     if (email) where.email = { [Op.like]: `%${email}%` };
@@ -27,13 +29,14 @@ route.get("/", Middleware, RoleMiddleware(["admin"]), async (req, res) => {
 
     const users = await User.findAndCountAll({
       where,
+      order: [["fullName", sort]],
       limit: limit,
       offset: offset,
     });
     res.json({ total: users.count, data: users.rows });
     logger.info("Получены все users");
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(600).json({ message: error.message });
     logger.error(error.message);
   }
 });
@@ -48,14 +51,11 @@ route.get("/:id", Middleware, RoleMiddleware(["admin"]), async (req, res) => {
     res.json(user);
     logger.info("Получен user по id");
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(600).json({ message: error.message });
     logger.error(error.message);
   }
 });
 
-let userPatchSchema = Joi.object({
-  name: Joi.string().min(2).max(55).optional(),
-});
 
 route.patch("/:id", Middleware, async (req, res) => {
   try {
@@ -104,7 +104,7 @@ route.patch("/:id", Middleware, async (req, res) => {
     res.json(user);
     logger.info("User изменен");
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(600).json({ message: error.message });
     logger.error(error.message);
   }
 });
@@ -125,7 +125,7 @@ route.delete("/:id", Middleware, async (req, res) => {
     res.json({ message: "User удален" });
     logger.info("User удален");
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(600).json({ message: error.message });
     logger.error(error.message);
   }
 });

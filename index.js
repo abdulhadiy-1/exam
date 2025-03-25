@@ -6,14 +6,26 @@ const AuthRoute = require("./routes/auth");
 const UserRoute = require("./routes/user");
 const CategoryRoute = require("./routes/category");
 const ResursRoute = require("./routes/resurs");
-const courseRegisterRoute = require("./routes/courseRegister");
-const CommentRoute = require("./routes/comment");
-const sohaRoute = require("./routes/soha");
+const multer = require("multer");
 
 logger.info("Логгер настроен и работает!");
 const app = express();
 app.use(express.json());
 connectDb();
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/");
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
+
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 10 * 1024 * 1024 },
+});
 
 app.use("/region", RegionRoute);
 app.use("/auth", AuthRoute);

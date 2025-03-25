@@ -13,6 +13,19 @@ const Middleware = (req, res, next) => {
   }
 };
 
+const ReMiddleware = (req, res, next) => {
+  const token = req.header("Authorization")?.split(" ")[1];
+  if (!token) return res.status(401).json({ message: "Token yo'q." });
+
+  try {
+    const decoded = jwt.verify(token, "resoz");
+    req.user = decoded;
+    next();
+  } catch (error) {
+    return res.status(401).json({ message: "Yaroqsiz token." });
+  }
+};
+
 const RoleMiddleware = (roles) => (req, res, next) => {
   if (!req.user) {
     return res.status(401).json({ message: "Token yo'q yoki noto'g'ri." });
@@ -27,4 +40,4 @@ const RoleMiddleware = (roles) => (req, res, next) => {
   next();
 };
 
-module.exports = { Middleware, RoleMiddleware };
+module.exports = { Middleware, RoleMiddleware, ReMiddleware };
