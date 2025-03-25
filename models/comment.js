@@ -1,5 +1,8 @@
 const { DataTypes } = require("sequelize");
 const { db } = require("../config/db");
+const logger = require("../middlewares/logger");
+const EduCenter = require("./EduCenter");
+const User = require("./user");
 
 const Comment = db.define("comments", {
   id: {
@@ -24,5 +27,9 @@ const Comment = db.define("comments", {
     type: DataTypes.INTEGER,
   },
 });
+logger.info("comment model is loaded!");
+
+Comment.belongsTo(User, { foreignKey: "userId" });
+Comment.belongsTo(EduCenter, { foreignKey: "eduId" });
 
 module.exports = Comment;

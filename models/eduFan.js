@@ -1,5 +1,8 @@
 const { DataTypes } = require("sequelize");
 const { db } = require("../config/db");
+const logger = require("../middlewares/logger");
+const Fan = require("./fan");
+const EduCenter = require("./EduCenter");
 
 const EduFan = db.define("eduFan", {
   id: {
@@ -16,5 +19,11 @@ const EduFan = db.define("eduFan", {
     allowNull: false,
   },
 });
+logger.info("eduFan model is loaded!");
+
+EduFan.hasMany(EduCenter, { foreignKey: "eduId" });
+EduCenter.belongsTo(EduFan, { foreignKey: "eduId" });
+EduFan.hasMany(Fan, { foreignKey: "fanId" });
+Fan.belongsTo(EduCenter, { foreignKey: "fanId" });
 
 module.exports = EduFan;

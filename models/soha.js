@@ -1,5 +1,9 @@
 const { DataTypes } = require("sequelize");
 const { db } = require("../config/db");
+const logger = require("../middlewares/logger");
+const CourseRegister = require("./courseRegister");
+const EduSoha = require("./eduSoha");
+const EduFan = require("./eduFan");
 
 const Soha = db.define("soha", {
   id: {
@@ -16,5 +20,9 @@ const Soha = db.define("soha", {
     allowNull: false,
   },
 });
+logger.info("soha model is loaded!");
+
+Soha.hasMany(CourseRegister, { foreignKey: "sohaId" });
+Soha.hasMany(EduSoha, { foreignKey: "sohaId" });
 
 module.exports = Soha;
