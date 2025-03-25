@@ -13,6 +13,9 @@ const app = express();
 app.use(express.json());
 connectDb();
 
+app.use("/uploads", express.static("uploads"));
+
+
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "uploads/"); 
@@ -25,6 +28,21 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage: storage,
   limits: { fileSize: 10 * 1024 * 1024 },
+});
+
+app.post("/upload", upload.single("file"), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ message: "Файл не загружен!" });
+  }
+  res.json({ message: "Файл успешно загружен!", file: req.file });
+});
+
+app.post("/get-url", (req, res) => {
+  const { file } = req.body;
+  if (!file) {
+    return res.status(400).json({ message: "Файл не указан!" });
+  }
+  res.json({ url: `http://localhost:3000/uploads/${file}` });
 });
 
 
