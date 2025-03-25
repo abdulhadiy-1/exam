@@ -15,7 +15,9 @@ route.get("/", async (req, res) => {
     let page = Number(req.query.page) || 1;
     let offset = limit * (page - 1);
     let search = req.query.search || "";
-
+    let sort = ["ASC", "DESC"].includes(req.query.sort?.toUpperCase())
+    ? req.query.sort.toUpperCase()
+    : "ASC";
     const resurses = await Resurs.findAndCountAll({
       where: {
         name: { [Op.like]: `%${search}%` },
@@ -30,6 +32,7 @@ route.get("/", async (req, res) => {
           attributes: ["name"],
         },
       ],
+      order: [["name", sort]],
       limit,
       offset,
     });
@@ -37,7 +40,7 @@ route.get("/", async (req, res) => {
     res.json({ total: resurses.count, data: resurses.rows });
     logger.info("Получены все ресурсы");
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(600).json({ message: error.message });
     logger.error(error.message);
   }
 });
@@ -61,7 +64,7 @@ route.get("/:id", async (req, res) => {
     res.json(resurs);
     logger.info("Получен ресурс по id");
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(600).json({ message: error.message });
     logger.error(error.message);
   }
 });
@@ -78,8 +81,8 @@ route.post("/", Middleware, async (req, res) => {
   try {
     const { error } = resursPostSchema.validate(req.body);
     if (error) return res.status(400).json({ message: error.details[0].message });
-
-    const { categoryId, userId, name, media, description } = req.body;
+    const userId = req.user.id; 
+    const { categoryId, name, media, description } = req.body;
 
     let category = await Category.findByPk(categoryId);
     let user = await User.findByPk(userId);
@@ -90,7 +93,7 @@ route.post("/", Middleware, async (req, res) => {
     res.json(newResurs);
     logger.info("Ресурс создан");
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(600).json({ message: error.message });
     logger.error(error.message);
   }
 });
@@ -117,7 +120,7 @@ route.patch("/:id", Middleware, async (req, res) => {
     res.json(resurs);
     logger.info("Ресурс изменен");
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(600).json({ message: error.message });
     logger.error(error.message);
   }
 });
@@ -135,7 +138,7 @@ route.delete("/:id", Middleware, async (req, res) => {
     res.json({ message: "Ресурс удален" });
     logger.info("Ресурс удален");
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(600).json({ message: error.message });
     logger.error(error.message);
   }
 });
