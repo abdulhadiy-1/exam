@@ -1,7 +1,14 @@
 const { Router } = require("express");
 const EduCenter = require("../models/EduCenter");
+<<<<<<< HEAD
 const { Op } = require("sequelize");
 const joi = require("joi");
+=======
+const logger = require("../middlewares/logger");
+const { Op } = require("sequelize");
+const joi = require("joi");
+const { Middleware, RoleMiddleware } = require("../middlewares/auth");
+>>>>>>> f6b507aef6769a34eaeb1c3f98d39d7b6ed6e013
 
 const route = Router();
 
@@ -25,7 +32,12 @@ route.get("/", async (req, res) => {
     res.json(eduCenters);
   } catch (error) {
     console.log(error);
+<<<<<<< HEAD
     res.status(500).json({ message: "Server error" });
+=======
+    res.status(600).json({ message: error.message });
+    logger.error(error.message);
+>>>>>>> f6b507aef6769a34eaeb1c3f98d39d7b6ed6e013
   }
 });
 
@@ -40,7 +52,12 @@ route.get("/:id", async (req, res) => {
     res.json(eduCenter);
   } catch (error) {
     console.log(error);
+<<<<<<< HEAD
     res.status(500).json({ message: "Server error" });
+=======
+    res.status(600).json({ message: error.message });
+    logger.error(error.message);
+>>>>>>> f6b507aef6769a34eaeb1c3f98d39d7b6ed6e013
   }
 });
 
@@ -67,7 +84,12 @@ route.post("/", async (req, res) => {
     res.json({ message: "Education center created" });
   } catch (error) {
     console.log(error);
+<<<<<<< HEAD
     res.status(500).json({ message: "Server error" });
+=======
+    res.status(600).json({ message: error.message });
+    logger.error(error.message);
+>>>>>>> f6b507aef6769a34eaeb1c3f98d39d7b6ed6e013
   }
 });
 
@@ -98,7 +120,12 @@ route.patch("/:id", async (req, res) => {
     res.json({ message: "Education center updated" });
   } catch (error) {
     console.log(error);
+<<<<<<< HEAD
     res.status(500).json({ message: "Server error" });
+=======
+    res.status(600).json({ message: error.message });
+    logger.error(error.message);
+>>>>>>> f6b507aef6769a34eaeb1c3f98d39d7b6ed6e013
   }
 });
 
@@ -113,7 +140,12 @@ route.delete("/:id", async (req, res) => {
     res.json({ message: "Education center deleted" });
   } catch (error) {
     console.log(error);
+<<<<<<< HEAD
     res.status(500).json({ message: "Server error" });
+=======
+    res.status(600).json({ message: error.message });
+    logger.error(error.message);
+>>>>>>> f6b507aef6769a34eaeb1c3f98d39d7b6ed6e013
   }
 });
 

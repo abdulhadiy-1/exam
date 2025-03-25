@@ -1,7 +1,14 @@
 const { Router } = require("express");
 const Fillial = require("../models/fillial");
 const { Op } = require("sequelize");
+<<<<<<< HEAD
 const joi = require("joi");
+=======
+const logger = require("../middlewares/logger");
+const Joi = require("joi");
+const { Middleware, RoleMiddleware } = require("../middlewares/auth");
+
+>>>>>>> f6b507aef6769a34eaeb1c3f98d39d7b6ed6e013
 
 const route = Router();
 
@@ -51,7 +58,12 @@ route.get("/", async (req, res) => {
     res.json(fillials);
   } catch (error) {
     console.log(error);
+<<<<<<< HEAD
     res.status(500).json({ message: "Server error" });
+=======
+    res.status(600).json({ message: error.message });
+    logger.error(error.message);
+>>>>>>> f6b507aef6769a34eaeb1c3f98d39d7b6ed6e013
   }
 });
 
@@ -83,7 +95,12 @@ route.get("/:id", async (req, res) => {
     res.json(fillial);
   } catch (error) {
     console.log(error);
+<<<<<<< HEAD
     res.status(500).json({ message: "Server error" });
+=======
+    res.status(600).json({ message: error.message });
+    logger.error(error.message);
+>>>>>>> f6b507aef6769a34eaeb1c3f98d39d7b6ed6e013
   }
 });
 
@@ -152,7 +169,12 @@ route.post("/", async (req, res) => {
     res.status(201).json({ message: "Fillial created" });
   } catch (error) {
     console.log(error);
+<<<<<<< HEAD
     res.status(500).json({ message: "Server error" });
+=======
+    res.status(600).json({ message: error.message });
+    logger.error(error.message);
+>>>>>>> f6b507aef6769a34eaeb1c3f98d39d7b6ed6e013
   }
 });
 
@@ -223,7 +245,12 @@ route.patch("/:id", async (req, res) => {
     res.json({ message: "Fillial updated" });
   } catch (error) {
     console.log(error);
+<<<<<<< HEAD
     res.status(500).json({ message: "Server error" });
+=======
+    res.status(600).json({ message: error.message });
+    logger.error(error.message);
+>>>>>>> f6b507aef6769a34eaeb1c3f98d39d7b6ed6e013
   }
 });
 
