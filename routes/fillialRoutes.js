@@ -4,6 +4,7 @@ const { Op } = require("sequelize");
 const logger = require("../middlewares/logger");
 const Joi = require("joi");
 const { Middleware, RoleMiddleware } = require("../middlewares/auth");
+const EduCenter = require("../models/EduCenter");
 
 const route = Router();
 
@@ -78,6 +79,7 @@ route.get("/", async (req, res) => {
  */
 route.get("/:id", async (req, res) => {
   try {
+
     let { id } = req.params;
     let fillial = await Fillial.findByPk(id);
     if (!fillial) return res.status(404).json({ message: "Fillial not found" });
@@ -133,8 +135,10 @@ route.get("/:id", async (req, res) => {
  *       400:
  *         description: Validation error
  */
-route.post("/", async (req, res) => {
+route.post("/",Middleware,RoleMiddleware(["admin", "seo" ]), async (req, res) => {
   try {
+    let userId = req.user.id
+    let region = await Region.findByPk(req.body.regionId); 
     let { name, phone, location, regionId, fanlar, sohalar, eduId, image } =
       req.body;
     let schema = joi.object({
@@ -142,16 +146,23 @@ route.post("/", async (req, res) => {
       phone: joi.string().min(7).required(),
       location: joi.string().min(2).required(),
       regionId: joi.number().integer().required(),
-      fanlar: joi.string().min(2).required(),
-      sohalar: joi.string().min(2).required(),
+      fanlar: joi.array().items(joi.number()).required(),
+      sohalar: joi.array().items(joi.number()).required(),
       eduId: joi.number().integer().required(),
       image: joi.string().min(2).required(),
     });
 
     let { error } = schema.validate(req.body);
+
     if (error)
       return res.status(400).json({ message: error.details[0].message });
-
+    let eduCenter = await EduCenter.findByPk(eduId)
+    if(!eduCenter ) 
+      return res.status(404).json({message: "eduCenter not found"});
+    if (req.user.role == 'seo' && eduCenter.userId !== userId) 
+      return res.status(403).json({message: "siz bu amaolni bajara olmaysiz"});
+    if (!region)
+      return res.status(404).json({message: 'region not found'});
     await Fillial.create(req.body);
     res.status(201).json({ message: "Fillial created" });
   } catch (error) {
@@ -204,7 +215,7 @@ route.post("/", async (req, res) => {
  *       404:
  *         description: Fillial not found
  */
-route.patch("/:id", async (req, res) => {
+route.patch("/:id",Middleware,RoleMiddleware(["admin", "seo", "superadmin"]), async (req, res) => {
   try {
     let { id } = req.params;
     let fillial = await Fillial.findByPk(id);
@@ -216,8 +227,8 @@ route.patch("/:id", async (req, res) => {
         phone: joi.string().min(7),
         location: joi.string().min(2),
         regionId: joi.number().integer(),
-        fanlar: joi.string().min(2),
-        sohalar: joi.string().min(2),
+        fanlar: joi.array().items(joi.number()).required(),
+        sohalar: joi.array().items(joi.number()).required(),
         eduId: joi.number().integer(),
         image: joi.string().min(2),
       })
@@ -231,6 +242,39 @@ route.patch("/:id", async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(600).json({ message: error.message });
+    logger.error(error.message);
+  }
+});
+
+/**
+ * @swagger
+ * /fillials/{id}:
+ *   delete:
+ *     summary: Delete a fillial
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The fillial ID
+ *     responses:
+ *       200:
+ *         description: Fillial deleted successfully
+ *       404:
+ *         description: Fillial not found
+ */
+route.delete("/:id", Middleware, RoleMiddleware(["admin", "seo"]), async (req, res) => {
+  try {
+    let { id } = req.params;
+    let fillial = await Fillial.findByPk(id);
+    if (!fillial) return res.status(404).json({ message: "Fillial not found" });
+
+    await fillial.destroy();
+    res.status(200).json({ message: "Fillial deleted successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error.message });
     logger.error(error.message);
   }
 });

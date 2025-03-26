@@ -46,25 +46,24 @@ route.get("/:id", async (req, res) => {
   }
 });
 
-route.post("/", async (req, res) => {
+route.post("/",Middleware,RoleMiddleware(['admin','seo']), async (req, res) => {
   try {
-    let { image, regionId, userId, licetion, phone, name, fan, soha } =
+    let userId = req.user.id
+    let { image, regionId,  licetion, phone, name, fan, soha } =
       req.body;
     let schema = joi.object({
       image: joi.string().min(2).required(),
-      regionId: joi.number().integer().required(),
-      userId: joi.number().integer().required(),
+      regionId: joi.number().min().required(),
       licetion: joi.string().min(2).required(),
       phone: joi.string().min(7).required(),
       name: joi.string().min(2).required(),
-      fan: joi.string().min(2).required(),
+      fan: joi.array().items(joi.number()).required(),
       soha: joi.string().min(2).required(),
     });
 
     let { error } = schema.validate({
       image,
       regionId,
-      userId,
       licetion,
       phone,
       name,
@@ -77,7 +76,6 @@ route.post("/", async (req, res) => {
     await EduCenter.create({
       image,
       regionId,
-      userId,
       licetion,
       phone,
       name,
@@ -92,30 +90,32 @@ route.post("/", async (req, res) => {
   }
 });
 
-route.patch("/:id", async (req, res) => {
+route.patch("/:id",Middleware,RoleMiddleware(['admin','seo','super-admin']), async (req, res) => {
   try {
+    let userId = req.user.id 
     let { id } = req.params;
     let eduCenter = await EduCenter.findByPk(id);
     if (!eduCenter)
       return res.status(404).json({ message: "Education center not found" });
+    if (req.user.role === 'seo' && userId != eduCenter.userId ){
+      return res.status(403).json({message: 'siz bu amaliyotni bajara olmaysiz'})
+    };
 
-    let { image, regionId, userId, licetion, phone, name, fan, soha } =
+    let { image, regionId,  licetion, phone, name, fan, soha } =
       req.body;
     let schema = joi.object({
       image: joi.string().min(2),
       regionId: joi.number().integer(),
-      userId: joi.number().integer(),
       licetion: joi.string().min(2),
       phone: joi.string().min(7),
       name: joi.string().min(2),
-      fan: joi.string().min(2),
+      fan: joi.array().items(joi.number()).required(),
       soha: joi.string().min(2),
     });
 
     let { error } = schema.validate({
       image,
       regionId,
-      userId,
       licetion,
       phone,
       name,
@@ -128,7 +128,6 @@ route.patch("/:id", async (req, res) => {
     await eduCenter.update({
       image,
       regionId,
-      userId,
       licetion,
       phone,
       name,
@@ -143,12 +142,15 @@ route.patch("/:id", async (req, res) => {
   }
 });
 
-route.delete("/:id", async (req, res) => {
+route.delete("/:id",Middleware,RoleMiddleware(['admin','seo']), async (req, res) => {
   try {
+    let userId = req.user.id 
     let { id } = req.params;
     let eduCenter = await EduCenter.findByPk(id);
     if (!eduCenter)
       return res.status(404).json({ message: "Education center not found" });
+    if (req.user.role === 'seo' && userId != eduCenter.userId ){
+      return res.status(403).json({message: 'siz bu amaliyotni bajara olmaysiz'})};
 
     await eduCenter.destroy();
     res.json({ message: "Education center deleted" });
