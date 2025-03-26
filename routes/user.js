@@ -18,8 +18,8 @@ route.get("/", Middleware, RoleMiddleware(["admin"]), async (req, res) => {
     let role = req.query.role || "";
     let status = req.query.status || "";
     let sort = ["ASC", "DESC"].includes(req.query.sort?.toUpperCase())
-    ? req.query.sort.toUpperCase()
-    : "ASC";
+      ? req.query.sort.toUpperCase()
+      : "ASC";
     let where = {};
     if (name) where.fullName = { [Op.like]: `%${name}%` };
     if (email) where.email = { [Op.like]: `%${email}%` };
@@ -34,7 +34,7 @@ route.get("/", Middleware, RoleMiddleware(["admin"]), async (req, res) => {
       offset: offset,
     });
     res.json({ total: users.count, data: users.rows });
-    logger.info("Получены все users");
+    logger.info("All users retrieved");
   } catch (error) {
     res.status(600).json({ message: error.message });
     logger.error(error.message);
@@ -46,28 +46,27 @@ route.get("/:id", Middleware, RoleMiddleware(["admin"]), async (req, res) => {
     let id = req.params.id;
     const user = await User.findByPk(id);
     if (!user) {
-      return res.status(404).json({ message: "user не найден" });
+      return res.status(404).json({ message: "User not found" });
     }
     res.json(user);
-    logger.info("Получен user по id");
+    logger.info("User retrieved by ID");
   } catch (error) {
     res.status(600).json({ message: error.message });
     logger.error(error.message);
   }
 });
 
-
 route.patch("/:id", Middleware, async (req, res) => {
   try {
     let id = req.params.id;
     const user = await User.findByPk(id);
     if (!user) {
-      return res.status(404).json({ message: "User не найден" });
+      return res.status(404).json({ message: "User not found" });
     }
     if (req.user.role === "user" && req.user.id !== user.id) {
       return res
         .status(403)
-        .json({ message: "У вас нет прав на изменение данного пользователя" });
+        .json({ message: "You do not have permission to update this user" });
     }
     const schema = Joi.object({
       fullName: Joi.string().min(2).max(55).optional(),
@@ -85,24 +84,24 @@ route.patch("/:id", Middleware, async (req, res) => {
     if (req.body.regionId) {
       let isValid = await Region.findByPk(req.body.regionId);
       if (!isValid) {
-        return res.status(400).json({ message: "Region не найден" });
+        return res.status(400).json({ message: "Region not found" });
       }
     }
     if (req.body.email) {
       let isValid = await User.findOne({ where: { email: req.body.email } });
       if (isValid) {
-        return res.status(400).json({ message: "Email уже занят" });
+        return res.status(400).json({ message: "Email is already taken" });
       }
     }
     if (req.body.phone) {
       let isValid = await User.findOne({ where: { phone: req.body.phone } });
       if (isValid) {
-        return res.status(400).json({ message: "number уже занят" });
+        return res.status(400).json({ message: "Phone number is already taken" });
       }
     }
     await user.update(req.body);
     res.json(user);
-    logger.info("User изменен");
+    logger.info("User updated");
   } catch (error) {
     res.status(600).json({ message: error.message });
     logger.error(error.message);
@@ -114,16 +113,16 @@ route.delete("/:id", Middleware, async (req, res) => {
     let id = req.params.id;
     const user = await User.findByPk(id);
     if (!user) {
-      return res.status(404).json({ message: "User не найден" });
+      return res.status(404).json({ message: "User not found" });
     }
     if (req.user.role !== "admin" && req.user.id !== user.id) {
       return res
         .status(403)
-        .json({ message: "У вас нет прав на удаление данного пользователя" });
+        .json({ message: "You do not have permission to delete this user" });
     }
     await user.destroy();
-    res.json({ message: "User удален" });
-    logger.info("User удален");
+    res.json({ message: "User deleted" });
+    logger.info("User deleted");
   } catch (error) {
     res.status(600).json({ message: error.message });
     logger.error(error.message);

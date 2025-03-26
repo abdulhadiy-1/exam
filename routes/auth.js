@@ -30,11 +30,11 @@ async function sendMail(email, otp) {
   try {
     await transporter.sendMail({
       to: email,
-      subject: "Ваш одноразовый пароль",
+      subject: "Your one-time password",
       text: `Your one-time password: ${otp}`,
     });
 
-    logger.info("Otp sent to email!");
+    logger.info("OTP sent to email!");
   } catch (error) {
     logger.error(error.message);
   }
@@ -65,7 +65,7 @@ route.get("/me", async (req, res) => {
     res.json(user);
     logger.info("User info sent!");
   } catch (error) {
-    res.status(401).json({ message: "Problrm with token.", error: error.message });
+    res.status(401).json({ message: "Problem with token.", error: error.message });
     logger.error(error.message);
   }
 });
@@ -75,14 +75,12 @@ route.post("/send-otp", async (req, res) => {
     let { email } = req.body;
     let user = await User.findOne({ where: { email } });
     if (!user) {
-      return res
-        .status(404)
-        .json({ message: "Пользователь с таким email не найден" });
+      return res.status(404).json({ message: "User with this email not found" });
     }
     let otp = totp.generate(email + "soz");
     await sendMail(email, otp);
-    res.json({ message: `Otp sent to ${email}!`});
-    logger.info("Otp sent!");
+    res.json({ message: `OTP sent to ${email}!` });
+    logger.info("OTP sent!");
   } catch (error) {
     res.status(600).json({ message: error.message });
     logger.error(error.message);
@@ -94,13 +92,11 @@ route.post("/verify", async (req, res) => {
     let { email, otp } = req.body;
     let isValid = totp.check(otp, email + "soz");
     if (!isValid) {
-      return res.status(400).json({ message: "Invalid otp" });
+      return res.status(400).json({ message: "Invalid OTP" });
     }
     let user = await User.findOne({ where: { email } });
     if (!user) {
-      return res
-        .status(404)
-        .json({ message: "Пользователь с таким email не найден" });
+      return res.status(404).json({ message: "User with this email not found" });
     }
     await user.update({ status: "active" });
     res.json({ message: "User verified!" });
@@ -134,21 +130,14 @@ route.post("/register", async (req, res) => {
     return res.status(400).json({ message: error.details[0].message });
   }
   if (req.body.year > newYear - 18) {
-    return res
-      .status(400)
-      .json({ message: "You must be at least 18 years old" });
+    return res.status(400).json({ message: "You must be at least 18 years old" });
   }
   const { email, password } = req.body;
-  if (!req.body.regionId) {
-    return res.status(400).json({ message: "RegionId is required" });
-  }
 
   try {
     let user = await User.findOne({ where: { email } });
     if (user) {
-      return res
-        .status(400)
-        .json({ message: "Пользователь с таким email уже существует" });
+      return res.status(400).json({ message: "User with this email already exists" });
     }
     let region = await Region.findByPk(req.body.regionId);
     if (!region) {
@@ -163,7 +152,7 @@ route.post("/register", async (req, res) => {
       status: "pending",
     });
     await sendMail(email, otp);
-    res.json({ newUser, message: `User created, Otp sent to ${email}!` });
+    res.json({ newUser, message: `User created, OTP sent to ${email}!` });
     logger.info("User created!");
   } catch (error) {
     res.status(600).json({ message: error.message });
@@ -176,21 +165,19 @@ route.post("/login", async (req, res) => {
     let { email, password } = req.body;
     let user = await User.findOne({ where: { email } });
     if (!user) {
-      return res
-        .status(404)
-        .json({ message: "Пользователь с таким email не найден" });
+      return res.status(404).json({ message: "User with this email not found" });
     }
     let isActive = user.status === "active";
     if (!isActive) {
-      return res.status(400).json({ message: "User не верифицирован" });
+      return res.status(400).json({ message: "User is not verified" });
     }
     let isValid = await bcrypt.compare(password, user.password);
     if (!isValid) {
-      return res.status(400).json({ message: "Неверный пароль" });
+      return res.status(400).json({ message: "Incorrect password" });
     }
     let AccessToken = generateAccessToken(user);
     let RefreshToken = generateRefreshToken(user);
-    res.json({ message: `you logged`, AccessToken, RefreshToken });
+    res.json({ message: "You are logged in", AccessToken, RefreshToken });
     logger.info("User logged in!");
   } catch (error) {
     res.status(600).json({ message: error.message });
@@ -203,13 +190,11 @@ route.post("/change-password", async (req, res) => {
     let { email, password, newPassword } = req.body;
     let user = await User.findOne({ where: { email } });
     if (!user) {
-      return res
-        .status(404)
-        .json({ message: "Пользователь с таким email не найден" });
+      return res.status(404).json({ message: "User with this email not found" });
     }
     let isValid = await bcrypt.compare(password, user.password);
     if (!isValid) {
-      return res.status(400).json({ message: "Неверный пароль" });
+      return res.status(400).json({ message: "Incorrect password" });
     }
     let hash = await bcrypt.hash(newPassword, 10);
     await user.update({ password: hash });

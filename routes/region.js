@@ -12,8 +12,9 @@ route.get("/", async (req, res) => {
     let offset = limit * (page - 1);
     let search = req.query.search || "";
     let sort = ["ASC", "DESC"].includes(req.query.sort?.toUpperCase())
-    ? req.query.sort.toUpperCase()
-    : "ASC";
+      ? req.query.sort.toUpperCase()
+      : "ASC";
+    
     const regions = await Region.findAndCountAll({
       where: {
         name: {
@@ -24,8 +25,9 @@ route.get("/", async (req, res) => {
       limit: limit,
       offset: offset,
     });
+    
     res.json({ total: regions.count, data: regions.rows });
-    logger.info("Получены все регионы");
+    logger.info("All regions retrieved");
   } catch (error) {
     res.status(600).json({ message: error.message });
     logger.error(error.message);
@@ -37,10 +39,10 @@ route.get("/:id", async (req, res) => {
     let id = req.params.id;
     const region = await Region.findByPk(id);
     if (!region) {
-      return res.status(404).json({ message: "Регион не найден" });
+      return res.status(404).json({ message: "Region not found" });
     }
     res.json(region);
-    logger.info("Получен регион по id");
+    logger.info("Region retrieved by ID");
   } catch (error) {
     res.status(600).json({ message: error.message });
     logger.error(error.message);
@@ -56,7 +58,7 @@ route.post("/", async (req, res) => {
     let name = req.body.name;
     const region = await Region.findOne({ where: { name: name } });
     if (region) {
-      return res.status(400).json({ message: "Регион уже существует" });
+      return res.status(400).json({ message: "Region already exists" });
     }
     let { error } = regionPostSchema.validate({ name });
     if (error) {
@@ -64,7 +66,7 @@ route.post("/", async (req, res) => {
     }
     const newRegion = await Region.create({ name });
     res.json(newRegion);
-    logger.info("Регион создан");
+    logger.info("Region created");
   } catch (error) {
     res.status(600).json({ message: error.message });
     logger.error(error.message);
@@ -80,7 +82,7 @@ route.patch("/:id", async (req, res) => {
     let id = req.params.id;
     const region = await Region.findByPk(id);
     if (!region) {
-      return res.status(404).json({ message: "Регион не найден" });
+      return res.status(404).json({ message: "Region not found" });
     }
     let name = req.body.name;
     let { error } = regionPatchSchema.validate({ name });
@@ -89,7 +91,7 @@ route.patch("/:id", async (req, res) => {
     }
     await region.update({ name });
     res.json(region);
-    logger.info("Регион изменен");
+    logger.info("Region updated");
   } catch (error) {
     res.status(600).json({ message: error.message });
     logger.error(error.message);
@@ -101,11 +103,11 @@ route.delete("/:id", async (req, res) => {
     let id = req.params.id;
     const region = await Region.findByPk(id);
     if (!region) {
-      return res.status(404).json({ message: "Регион не найден" });
+      return res.status(404).json({ message: "Region not found" });
     }
     await region.destroy();
-    res.json({ message: "Регион удален" });
-    logger.info("Регион удален");
+    res.json({ message: "Region deleted" });
+    logger.info("Region deleted");
   } catch (error) {
     res.status(600).json({ message: error.message });
     logger.error(error.message);

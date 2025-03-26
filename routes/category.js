@@ -25,7 +25,7 @@ route.get("/", async (req, res) => {
     });
 
     res.json({ total: categories.count, data: categories.rows });
-    logger.info("Получены все категории");
+    logger.info("All categories retrieved");
   } catch (error) {
     res.status(600).json({ message: error.message });
     logger.error(error.message);
@@ -36,10 +36,10 @@ route.get("/:id", async (req, res) => {
   try {
     const category = await Category.findByPk(req.params.id);
     if (!category)
-      return res.status(404).json({ message: "Категория не найдена" });
+      return res.status(404).json({ message: "Category not found" });
 
     res.json(category);
-    logger.info("Получена категория по id");
+    logger.info("Category retrieved by ID");
   } catch (error) {
     res.status(600).json({ message: error.message });
     logger.error(error.message);
@@ -56,7 +56,7 @@ route.post("/", Middleware, RoleMiddleware(["admin"]), async (req, res) => {
     const { name, image } = req.body;
 
     if (await Category.findOne({ where: { name } })) {
-      return res.status(400).json({ message: "Категория уже существует" });
+      return res.status(400).json({ message: "Category already exists" });
     }
 
     const { error } = categoryPostSchema.validate({ name, image });
@@ -65,7 +65,7 @@ route.post("/", Middleware, RoleMiddleware(["admin"]), async (req, res) => {
 
     const newCategory = await Category.create({ name, image });
     res.json(newCategory);
-    logger.info("Категория создана");
+    logger.info("Category created");
   } catch (error) {
     res.status(600).json({ message: error.message });
     logger.error(error.message);
@@ -85,7 +85,7 @@ route.patch(
     try {
       const category = await Category.findByPk(req.params.id);
       if (!category)
-        return res.status(404).json({ message: "Категория не найдена" });
+        return res.status(404).json({ message: "Category not found" });
 
       const { error } = categoryPatchSchema.validate(req.body);
       if (error)
@@ -93,7 +93,7 @@ route.patch(
 
       await category.update(req.body);
       res.json(category);
-      logger.info("Категория изменена");
+      logger.info("Category updated");
     } catch (error) {
       res.status(600).json({ message: error.message });
       logger.error(error.message);
@@ -109,11 +109,11 @@ route.delete(
     try {
       const category = await Category.findByPk(req.params.id);
       if (!category)
-        return res.status(404).json({ message: "Категория не найдена" });
+        return res.status(404).json({ message: "Category not found" });
 
       await category.destroy();
-      res.json({ message: "Категория удалена" });
-      logger.info("Категория удалена");
+      res.json({ message: "Category deleted" });
+      logger.info("Category deleted");
     } catch (error) {
       res.status(600).json({ message: error.message });
       logger.error(error.message);
