@@ -4,6 +4,7 @@ const { Op } = require("sequelize");
 const Soha = require("../models/soha");
 const sohaValidation = require("../validations/sohaValidation");
 const logger = require("../middlewares/logger");
+const { Middleware } = require("../middlewares/auth");
 
 const router = express.Router();
 
@@ -13,7 +14,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-router.post("/", upload.single("image"), async (req, res) => {
+router.post("/", Middleware, upload.single("image"), async (req, res) => {
   try {
     const { error } = sohaValidation.validate(req.body);
     if (error)
@@ -29,7 +30,7 @@ router.post("/", upload.single("image"), async (req, res) => {
   }
 });
 
-router.get("/", async (req, res) => {
+router.get("/", Middleware, async (req, res) => {
   try {
     let { page, limit, sort, order, search } = req.query;
     page = parseInt(page) || 1;
@@ -53,7 +54,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", Middleware, async (req, res) => {
   try {
     const soha = await Soha.findByPk(req.params.id);
     if (!soha) return res.status(404).json({ message: "Soha topilmadi" });
@@ -66,7 +67,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.put("/:id", upload.single("image"), async (req, res) => {
+router.patch("/:id", Middleware, upload.single("image"), async (req, res) => {
   try {
     const { error } = sohaValidation.validate(req.body);
     if (error)
@@ -85,7 +86,7 @@ router.put("/:id", upload.single("image"), async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", Middleware, async (req, res) => {
   try {
     const soha = await Soha.findByPk(req.params.id);
     if (!soha) return res.status(404).json({ message: "Soha topilmadi" });

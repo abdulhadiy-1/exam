@@ -8,15 +8,17 @@ const Soha = require("../models/soha");
 const Fan = require("../models/fan");
 const User = require("../models/user");
 const Fillial = require("../models/fillial");
+const { Middleware, RoleMiddleware } = require("../middlewares/auth");
 
 const router = express.Router();
 
-router.post("/", async (req, res) => {
+router.post("/", Middleware, async (req, res) => {
   try {
+    let userId = req.user.id;
     const { error } = courseRegisterValidation.validate(req.body);
     if (error)
       return res.status(400).json({ message: error.details[0].message });
-    let { eduId, sohaId, fanId, fillialId, userId } = req.body;
+    let { eduId, sohaId, fanId, fillialId } = req.body;
     let eduCenter = await EduCenter.findByPk(eduId);
     let soha = await Soha.findByPk(sohaId);
     let fan = await Fan.findByPk(fanId);
@@ -37,7 +39,7 @@ router.post("/", async (req, res) => {
     if (!fillial) {
       return res.status(404).json({ message: "fillial not found" });
     }
-    const course = await CourseRegister.create(req.body);
+    const course = await CourseRegister.create(...req.body, userId);
     res.status(201).json(course);
     logger.info("Yangi kurs qo'shildi");
   } catch (error) {
@@ -46,7 +48,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.get("/", async (req, res) => {
+router.get("/", Middleware, RoleMiddleware(["admin"]), async (req, res) => {
   try {
     let { page, limit, sort, order, search } = req.query;
     page = parseInt(page) || 1;
@@ -71,7 +73,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", Middleware, RoleMiddleware(["admin"]), async (req, res) => {
   try {
     const course = await CourseRegister.findByPk(req.params.id);
     if (!course) return res.status(404).json({ message: "Kurs topilmadi" });
@@ -84,35 +86,36 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// ✅ 4️⃣ Kursni yangilash
-router.put("/:id", async (req, res) => {
+router.patch("/:id", Middleware, async (req, res) => {
   try {
-    // 📌 Validation
     const { error } = courseRegisterValidation.validate(req.body);
     if (error)
       return res.status(400).json({ message: error.details[0].message });
 
     const course = await CourseRegister.findByPk(req.params.id);
     if (!course) return res.status(404).json({ message: "Kurs topilmadi" });
-
+    if (req.user.role !== "admin" && req.user.id !== comment.userId) {
+      return res.status(403).json({ message: "нет доступа" });
+    }
     await course.update(req.body);
     res.json(course);
-    logger.info("Kurs o‘zgartirildi");
+    logger.info("Kurs o'zgartirildi");
   } catch (error) {
     res.status(500).json({ message: error.message });
     logger.error(error.message);
   }
 });
 
-// ✅ 5️⃣ Kursni o‘chirish
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", Middleware, async (req, res) => {
   try {
     const course = await CourseRegister.findByPk(req.params.id);
     if (!course) return res.status(404).json({ message: "Kurs topilmadi" });
-
+    if (req.user.role !== "admin" && req.user.id !== comment.userId) {
+      return res.status(403).json({ message: "нет доступа" });
+    }
     await course.destroy();
-    res.json({ message: "Kurs o‘chirildi" });
-    logger.info("Kurs o‘chirildi");
+    res.json({ message: "Kurs o'chirildi" });
+    logger.info("Kurs o'chirildi");
   } catch (error) {
     res.status(500).json({ message: error.message });
     logger.error(error.message);

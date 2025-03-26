@@ -6,6 +6,10 @@ const AuthRoute = require("./routes/auth");
 const UserRoute = require("./routes/user");
 const CategoryRoute = require("./routes/category");
 const ResursRoute = require("./routes/resurs");
+const FanRoute = require("./routes/fan");
+const SohaRoute = require("./routes/soha");
+const CourseRegisterRoute = require("./routes/courseRegister");
+const CommentRoute = require("./routes/comment");
 const multer = require("multer");
 
 logger.info("Логгер настроен и работает!");
@@ -32,9 +36,10 @@ app.use("/auth", AuthRoute);
 app.use("/user", UserRoute);
 app.use("/category", CategoryRoute);
 app.use("/resurs", ResursRoute);
-app.use("/courseRegister", courseRegisterRoute);
+app.use("/courseRegister", CourseRegisterRoute);
 app.use("/comments", CommentRoute);
-app.use("/soha", sohaRoute);
+app.use("/soha", SohaRoute);
+app.use("/fan", FanRoute);
 
 app.listen(3000, () => {
   console.log("Server is running on port 3000");

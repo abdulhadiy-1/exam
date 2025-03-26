@@ -1,14 +1,9 @@
 const { Router } = require("express");
 const Fillial = require("../models/fillial");
 const { Op } = require("sequelize");
-<<<<<<< HEAD
-const joi = require("joi");
-=======
 const logger = require("../middlewares/logger");
 const Joi = require("joi");
 const { Middleware, RoleMiddleware } = require("../middlewares/auth");
-
->>>>>>> f6b507aef6769a34eaeb1c3f98d39d7b6ed6e013
 
 const route = Router();
 
@@ -45,7 +40,7 @@ route.get("/", async (req, res) => {
     let page = parseInt(req.query.page) || 1;
     let offset = (page - 1) * limit;
     let name = req.query.name;
-    
+
     let where = {};
     if (name) {
       where.name = { [Op.startsWith]: name };
@@ -58,12 +53,8 @@ route.get("/", async (req, res) => {
     res.json(fillials);
   } catch (error) {
     console.log(error);
-<<<<<<< HEAD
-    res.status(500).json({ message: "Server error" });
-=======
     res.status(600).json({ message: error.message });
     logger.error(error.message);
->>>>>>> f6b507aef6769a34eaeb1c3f98d39d7b6ed6e013
   }
 });
 
@@ -89,18 +80,13 @@ route.get("/:id", async (req, res) => {
   try {
     let { id } = req.params;
     let fillial = await Fillial.findByPk(id);
-    if (!fillial)
-      return res.status(404).json({ message: "Fillial not found" });
+    if (!fillial) return res.status(404).json({ message: "Fillial not found" });
 
     res.json(fillial);
   } catch (error) {
     console.log(error);
-<<<<<<< HEAD
-    res.status(500).json({ message: "Server error" });
-=======
     res.status(600).json({ message: error.message });
     logger.error(error.message);
->>>>>>> f6b507aef6769a34eaeb1c3f98d39d7b6ed6e013
   }
 });
 
@@ -149,7 +135,8 @@ route.get("/:id", async (req, res) => {
  */
 route.post("/", async (req, res) => {
   try {
-    let { name, phone, location, regionId, fanlar, sohalar, eduId, image } = req.body;
+    let { name, phone, location, regionId, fanlar, sohalar, eduId, image } =
+      req.body;
     let schema = joi.object({
       name: joi.string().min(2).required(),
       phone: joi.string().min(7).required(),
@@ -169,12 +156,8 @@ route.post("/", async (req, res) => {
     res.status(201).json({ message: "Fillial created" });
   } catch (error) {
     console.log(error);
-<<<<<<< HEAD
-    res.status(500).json({ message: "Server error" });
-=======
     res.status(600).json({ message: error.message });
     logger.error(error.message);
->>>>>>> f6b507aef6769a34eaeb1c3f98d39d7b6ed6e013
   }
 });
 
@@ -225,32 +208,30 @@ route.patch("/:id", async (req, res) => {
   try {
     let { id } = req.params;
     let fillial = await Fillial.findByPk(id);
-    if (!fillial)
-      return res.status(404).json({ message: "Fillial not found" });
+    if (!fillial) return res.status(404).json({ message: "Fillial not found" });
 
-    let { error } = joi.object({
-      name: joi.string().min(2),
-      phone: joi.string().min(7),
-      location: joi.string().min(2),
-      regionId: joi.number().integer(),
-      fanlar: joi.string().min(2),
-      sohalar: joi.string().min(2),
-      eduId: joi.number().integer(),
-      image: joi.string().min(2),
-    }).validate(req.body);
+    let { error } = joi
+      .object({
+        name: joi.string().min(2),
+        phone: joi.string().min(7),
+        location: joi.string().min(2),
+        regionId: joi.number().integer(),
+        fanlar: joi.string().min(2),
+        sohalar: joi.string().min(2),
+        eduId: joi.number().integer(),
+        image: joi.string().min(2),
+      })
+      .validate(req.body);
 
-    if (error) return res.status(400).json({ message: error.details[0].message });
+    if (error)
+      return res.status(400).json({ message: error.details[0].message });
 
     await fillial.update(req.body);
     res.json({ message: "Fillial updated" });
   } catch (error) {
     console.log(error);
-<<<<<<< HEAD
-    res.status(500).json({ message: "Server error" });
-=======
     res.status(600).json({ message: error.message });
     logger.error(error.message);
->>>>>>> f6b507aef6769a34eaeb1c3f98d39d7b6ed6e013
   }
 });
 
