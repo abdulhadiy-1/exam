@@ -18,10 +18,10 @@ app.use("/uploads", express.static("uploads"));
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploads/"); 
+    cb(null, "uploads/");
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname); 
+    cb(null, Date.now() + "-" + file.originalname);
   },
 });
 
@@ -51,7 +51,9 @@ app.use("/auth", AuthRoute);
 app.use("/user", UserRoute);
 app.use("/category", CategoryRoute);
 app.use("/resurs", ResursRoute);
-
+app.use("/courseRegister", courseRegisterRoute);
+app.use("/comments", CommentRoute);
+app.use("/soha", sohaRoute);
 
 app.listen(3000, () => {
   console.log("Server is running on port 3000");

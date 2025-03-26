@@ -65,7 +65,7 @@ route.get("/me", async (req, res) => {
     res.json(user);
     logger.info("User info sent!");
   } catch (error) {
-    res.status(600).json({ message: error.message });
+    res.status(401).json({ message: "Problrm with token.", error: error.message });
     logger.error(error.message);
   }
 });
@@ -81,7 +81,7 @@ route.post("/send-otp", async (req, res) => {
     }
     let otp = totp.generate(email + "soz");
     await sendMail(email, otp);
-    res.json({ message: `Otp sent to ${email}!` });
+    res.json({ message: `Otp sent to ${email}!`});
     logger.info("Otp sent!");
   } catch (error) {
     res.status(600).json({ message: error.message });
