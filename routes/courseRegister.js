@@ -61,6 +61,28 @@ router.get("/", Middleware, RoleMiddleware(["admin"]), async (req, res) => {
     const { rows, count } = await CourseRegister.findAndCountAll({
       where,
       order: [[sort, order]],
+      include: [
+        {
+          model: EduCenter,
+          attributes: ["name"],
+        },
+        {
+          model: Soha,
+          attributes: ["name"],
+        },
+        {
+          model: Fan,
+          attributes: ["name"],
+        },
+        {
+          model: User,
+          attributes: ["fullName"],
+        },
+        {
+          model: Fillial,
+          attributes: ["name"],
+        },
+      ],
       limit,
       offset: (page - 1) * limit,
     });
