@@ -21,7 +21,10 @@ const EduSoha = db.define("eduSoha", {
 });
 logger.info("eduSoha model is loaded!");
 
-EduSoha.belongsTo(EduCenter, { foreignKey: "eduId" });
+Soha.hasMany(EduSoha, { foreignKey: "sohaId" });
 EduSoha.belongsTo(Soha, { foreignKey: "sohaId" });
+
+EduCenter.hasMany(EduSoha, { foreignKey: "eduId"})
+EduSoha.belongsTo(EduCenter, { foreignKey: "eduId" });
 
 module.exports = EduSoha;

@@ -1,9 +1,15 @@
 const Joi = require("joi");
 
 const commentValidation = Joi.object({
-  text: Joi.string().min(3).max(500).required(),
-  userId: Joi.number().integer().required(),
-  elonId: Joi.number().integer().required(),
+  comment: Joi.string().min(2).max(250).required(),
+  star: Joi.number().min(0).max(5).required(),
+  eduId: Joi.number().required(),
 });
 
-module.exports = commentValidation;
+const patchValidation = Joi.object({
+  comment: Joi.string().min(2).max(250).optional(),
+  star: Joi.number().min(0).max(5).optional(),
+  eduId: Joi.number().optional(),
+});
+
+module.exports = { commentValidation, patchValidation };

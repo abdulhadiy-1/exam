@@ -6,6 +6,10 @@ const AuthRoute = require("./routes/auth");
 const UserRoute = require("./routes/user");
 const CategoryRoute = require("./routes/category");
 const ResursRoute = require("./routes/resurs");
+const FanRoute = require("./routes/fan");
+const SohaRoute = require("./routes/soha");
+const CourseRegisterRoute = require("./routes/courseRegister");
+const CommentRoute = require("./routes/comment");
 const multer = require("multer");
 const swaggerJsDoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
@@ -95,9 +99,10 @@ app.use("/auth", AuthRoute);
 app.use("/user", UserRoute);
 app.use("/category", CategoryRoute);
 app.use("/resurs", ResursRoute);
-app.use("/courseRegister", courseRegisterRoute);
+app.use("/courseRegister", CourseRegisterRoute);
 app.use("/comments", CommentRoute);
-app.use("/soha", sohaRoute);
+app.use("/soha", SohaRoute);
+app.use("/fan", FanRoute);
 
 const swaggerOptions = {
   swaggerDefinition: {
@@ -112,9 +117,22 @@ const swaggerOptions = {
         url: "http://localhost:3000",
       },
     ],
+    components: {
+      securitySchemes: {
+        BearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+        },
+      },
+    },
+    security: [{ BearerAuth: [] }], 
   },
   apis: ["./index.js", "./routes/*.js"],
 };
+
+module.exports = swaggerOptions;
+
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));

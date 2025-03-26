@@ -5,8 +5,62 @@ const logger = require("../middlewares/logger");
 const Joi = require("joi");
 const { Middleware, RoleMiddleware } = require("../middlewares/auth");
 const Region = require("../models/region");
+
 const route = Router();
 
+/**
+ * @swagger
+ * tags:
+ *   - name: Users
+ *     description: API для управления пользователями
+ */
+
+/**
+ * @swagger
+ * /users:
+ *   get:
+ *     summary: Получить список пользователей
+ *     tags: [Users]
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Количество пользователей на странице
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Номер страницы
+ *       - in: query
+ *         name: name
+ *         schema:
+ *           type: string
+ *         description: Фильтр по имени
+ *       - in: query
+ *         name: email
+ *         schema:
+ *           type: string
+ *         description: Фильтр по email
+ *       - in: query
+ *         name: phone
+ *         schema:
+ *           type: string
+ *         description: Фильтр по телефону
+ *       - in: query
+ *         name: role
+ *         schema:
+ *           type: string
+ *         description: Фильтр по роли
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *         description: Фильтр по статусу
+ *     responses:
+ *       200:
+ *         description: Список пользователей получен
+ */
 route.get("/", Middleware, RoleMiddleware(["admin"]), async (req, res) => {
   try {
     let limit = Number(req.query.limit) || 10;
@@ -30,8 +84,8 @@ route.get("/", Middleware, RoleMiddleware(["admin"]), async (req, res) => {
     const users = await User.findAndCountAll({
       where,
       order: [["fullName", sort]],
-      limit: limit,
-      offset: offset,
+      limit,
+      offset,
     });
     res.json({ total: users.count, data: users.rows });
     logger.info("All users retrieved");
@@ -41,6 +95,25 @@ route.get("/", Middleware, RoleMiddleware(["admin"]), async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /users/{id}:
+ *   get:
+ *     summary: Получить пользователя по ID
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID пользователя
+ *     responses:
+ *       200:
+ *         description: Пользователь найден
+ *       404:
+ *         description: Пользователь не найден
+ */
 route.get("/:id", Middleware, RoleMiddleware(["admin"]), async (req, res) => {
   try {
     let id = req.params.id;
@@ -56,6 +129,46 @@ route.get("/:id", Middleware, RoleMiddleware(["admin"]), async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /users/{id}:
+ *   patch:
+ *     summary: Обновить пользователя по ID
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID пользователя
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               fullName:
+ *                 type: string
+ *                 minLength: 2
+ *                 maxLength: 55
+ *               phone:
+ *                 type: string
+ *                 pattern: "^\+\d{12}$"
+ *               role:
+ *                 type: string
+ *                 enum: [admin, user, super-admin]
+ *     responses:
+ *       200:
+ *         description: Пользователь успешно обновлён
+ *       400:
+ *         description: Ошибка валидации данных
+ *       403:
+ *         description: Нет прав для обновления данного пользователя
+ *       404:
+ *         description: Пользователь не найден
+ */
 route.patch("/:id", Middleware, async (req, res) => {
   try {
     let id = req.params.id;
@@ -67,11 +180,9 @@ route.patch("/:id", Middleware, async (req, res) => {
       return res
         .status(403)
         .json({ message: "You do not have permission to update this user" });
-    }
+      }
     const schema = Joi.object({
       fullName: Joi.string().min(2).max(55).optional(),
-      email: Joi.string().email().optional(),
-      password: Joi.string().min(6).max(55).optional(),
       phone: Joi.string()
         .pattern(/^\+\d{12}$/)
         .optional(),
@@ -80,24 +191,6 @@ route.patch("/:id", Middleware, async (req, res) => {
     let { error } = schema.validate(req.body);
     if (error) {
       return res.status(400).json({ message: error.details[0].message });
-    }
-    if (req.body.regionId) {
-      let isValid = await Region.findByPk(req.body.regionId);
-      if (!isValid) {
-        return res.status(400).json({ message: "Region not found" });
-      }
-    }
-    if (req.body.email) {
-      let isValid = await User.findOne({ where: { email: req.body.email } });
-      if (isValid) {
-        return res.status(400).json({ message: "Email is already taken" });
-      }
-    }
-    if (req.body.phone) {
-      let isValid = await User.findOne({ where: { phone: req.body.phone } });
-      if (isValid) {
-        return res.status(400).json({ message: "Phone number is already taken" });
-      }
     }
     await user.update(req.body);
     res.json(user);
@@ -108,6 +201,27 @@ route.patch("/:id", Middleware, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /user/{id}:
+ *   delete:
+ *     summary: Удалить пользователя по ID
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID пользователя
+ *     responses:
+ *       200:
+ *         description: Пользователь успешно удалён
+ *       403:
+ *         description: Нет прав для удаления данного пользователя
+ *       404:
+ *         description: Пользователь не найден
+ */
 route.delete("/:id", Middleware, async (req, res) => {
   try {
     let id = req.params.id;

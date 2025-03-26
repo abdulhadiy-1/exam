@@ -1,9 +1,11 @@
 const { DataTypes } = require("sequelize");
-<<<<<<< HEAD
 const { db } = require("../config/db");
-const logger = require("../middlewares/logger");
+const User = require("./user");
+const Region = require("./region");
+const Soha = require("./soha");
+const Fan = require("./fan");
 
-const EduCenter = db.define("EduCenter", {
+const EduCenter = db.define("eduCenter", {
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
@@ -33,61 +35,20 @@ const EduCenter = db.define("EduCenter", {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  fan: {
-    type: DataTypes.STRING,
+  fanIds: {
+    type: DataTypes.JSON,
     allowNull: false,
   },
-  soha: {
-    type: DataTypes.STRING,
+  sohaIds: {
+    type: DataTypes.JSON,
     allowNull: false,
   },
 });
-logger.info("EduCenter model is loaded!");
+
+User.hasMany(EduCenter, { foreignKey: "userId" });
+EduCenter.belongsTo(User, { foreignKey: "userId" });
+
+Region.hasMany(EduCenter, { foreignKey: "regionId" });
+EduCenter.belongsTo(Region, { foreignKey: "regionId" });
 
 module.exports = EduCenter;
-=======
-const {db} = require("../config/db");
-
-const EduCenter = db.define("EduCenter", {
-    id: {
-        type: DataTypes.INTEGER,
-        autoIncrement: true,
-        primaryKey: true
-    },
-    image: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    regionId: {
-        type: DataTypes.INTEGER,
-        allowNull: false
-    },
-    userId: {
-        type: DataTypes.INTEGER,
-        allowNull: false
-    },
-    licetion: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    phone: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    name: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    fan: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    soha: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-});
-
-
-module.exports = EduCenter;
->>>>>>> f6b507aef6769a34eaeb1c3f98d39d7b6ed6e013

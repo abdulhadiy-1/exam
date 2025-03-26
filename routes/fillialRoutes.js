@@ -5,7 +5,6 @@ const logger = require("../middlewares/logger");
 const Joi = require("joi");
 const { Middleware, RoleMiddleware } = require("../middlewares/auth");
 
-
 const route = Router();
 
 /**
@@ -41,7 +40,7 @@ route.get("/", async (req, res) => {
     let page = parseInt(req.query.page) || 1;
     let offset = (page - 1) * limit;
     let name = req.query.name;
-    
+
     let where = {};
     if (name) {
       where.name = { [Op.startsWith]: name };
@@ -81,8 +80,7 @@ route.get("/:id", async (req, res) => {
   try {
     let { id } = req.params;
     let fillial = await Fillial.findByPk(id);
-    if (!fillial)
-      return res.status(404).json({ message: "Fillial not found" });
+    if (!fillial) return res.status(404).json({ message: "Fillial not found" });
 
     res.json(fillial);
   } catch (error) {
@@ -137,7 +135,8 @@ route.get("/:id", async (req, res) => {
  */
 route.post("/", async (req, res) => {
   try {
-    let { name, phone, location, regionId, fanlar, sohalar, eduId, image } = req.body;
+    let { name, phone, location, regionId, fanlar, sohalar, eduId, image } =
+      req.body;
     let schema = joi.object({
       name: joi.string().min(2).required(),
       phone: joi.string().min(7).required(),
@@ -209,21 +208,22 @@ route.patch("/:id", async (req, res) => {
   try {
     let { id } = req.params;
     let fillial = await Fillial.findByPk(id);
-    if (!fillial)
-      return res.status(404).json({ message: "Fillial not found" });
+    if (!fillial) return res.status(404).json({ message: "Fillial not found" });
 
-    let { error } = joi.object({
-      name: joi.string().min(2),
-      phone: joi.string().min(7),
-      location: joi.string().min(2),
-      regionId: joi.number().integer(),
-      fanlar: joi.string().min(2),
-      sohalar: joi.string().min(2),
-      eduId: joi.number().integer(),
-      image: joi.string().min(2),
-    }).validate(req.body);
-
-    if (error) return res.status(400).json({ message: error.details[0].message });
+    let { error } = joi
+      .object({
+        name: joi.string().min(2),
+        phone: joi.string().min(7),
+        location: joi.string().min(2),
+        regionId: joi.number().integer(),
+        fanlar: joi.string().min(2),
+        sohalar: joi.string().min(2),
+        eduId: joi.number().integer(),
+        image: joi.string().min(2),
+      })
+      .validate(req.body);
+    if (error)
+      return res.status(400).json({ message: error.details[0].message });
 
     await fillial.update(req.body);
     res.json({ message: "Fillial updated" });

@@ -5,7 +5,6 @@ const logger = require("../middlewares/logger");
 const Joi = require("joi");
 const { Middleware, RoleMiddleware } = require("../middlewares/auth");
 
-
 const route = Router();
 
 /**

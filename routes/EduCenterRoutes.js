@@ -7,14 +7,13 @@ const { Middleware, RoleMiddleware } = require("../middlewares/auth");
 
 const route = Router();
 
-
 route.get("/", async (req, res) => {
   try {
     let limit = parseInt(req.query.limit) || 10;
     let page = parseInt(req.query.page) || 1;
     let offset = (page - 1) * limit;
     let name = req.query.name;
-    
+
     let where = {};
     if (name) {
       where.name = { [Op.startsWith]: name };
@@ -32,7 +31,6 @@ route.get("/", async (req, res) => {
   }
 });
 
-
 route.get("/:id", async (req, res) => {
   try {
     let { id } = req.params;
@@ -48,10 +46,10 @@ route.get("/:id", async (req, res) => {
   }
 });
 
-
 route.post("/", async (req, res) => {
   try {
-    let { image, regionId, userId, licetion, phone, name, fan, soha } = req.body;
+    let { image, regionId, userId, licetion, phone, name, fan, soha } =
+      req.body;
     let schema = joi.object({
       image: joi.string().min(2).required(),
       regionId: joi.number().integer().required(),
@@ -63,11 +61,29 @@ route.post("/", async (req, res) => {
       soha: joi.string().min(2).required(),
     });
 
-    let { error } = schema.validate({ image, regionId, userId, licetion, phone, name, fan, soha });
+    let { error } = schema.validate({
+      image,
+      regionId,
+      userId,
+      licetion,
+      phone,
+      name,
+      fan,
+      soha,
+    });
     if (error)
       return res.status(400).json({ message: error.details[0].message });
 
-    await EduCenter.create({ image, regionId, userId, licetion, phone, name, fan, soha });
+    await EduCenter.create({
+      image,
+      regionId,
+      userId,
+      licetion,
+      phone,
+      name,
+      fan,
+      soha,
+    });
     res.json({ message: "Education center created" });
   } catch (error) {
     console.log(error);
@@ -83,7 +99,8 @@ route.patch("/:id", async (req, res) => {
     if (!eduCenter)
       return res.status(404).json({ message: "Education center not found" });
 
-    let { image, regionId, userId, licetion, phone, name, fan, soha } = req.body;
+    let { image, regionId, userId, licetion, phone, name, fan, soha } =
+      req.body;
     let schema = joi.object({
       image: joi.string().min(2),
       regionId: joi.number().integer(),
@@ -95,11 +112,29 @@ route.patch("/:id", async (req, res) => {
       soha: joi.string().min(2),
     });
 
-    let { error } = schema.validate({ image, regionId, userId, licetion, phone, name, fan, soha });
+    let { error } = schema.validate({
+      image,
+      regionId,
+      userId,
+      licetion,
+      phone,
+      name,
+      fan,
+      soha,
+    });
     if (error)
       return res.status(400).json({ message: error.details[0].message });
 
-    await eduCenter.update({ image, regionId, userId, licetion, phone, name, fan, soha });
+    await eduCenter.update({
+      image,
+      regionId,
+      userId,
+      licetion,
+      phone,
+      name,
+      fan,
+      soha,
+    });
     res.json({ message: "Education center updated" });
   } catch (error) {
     console.log(error);

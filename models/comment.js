@@ -13,7 +13,6 @@ const Comment = db.define("comments", {
   userId: {
     type: DataTypes.INTEGER,
     allowNull: false,
-    re,
   },
   comment: {
     type: DataTypes.STRING,
@@ -23,13 +22,13 @@ const Comment = db.define("comments", {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
-  centerId: {
-    type: DataTypes.INTEGER,
-  },
 });
 logger.info("comment model is loaded!");
 
+User.hasMany(Comment, { foreignKey: "userId" });
 Comment.belongsTo(User, { foreignKey: "userId" });
+
+EduCenter.hasMany(Comment, { foreignKey: "eduId" });
 Comment.belongsTo(EduCenter, { foreignKey: "eduId" });
 
 module.exports = Comment;

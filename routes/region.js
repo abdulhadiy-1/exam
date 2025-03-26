@@ -5,6 +5,45 @@ const logger = require("../middlewares/logger");
 const Joi = require("joi");
 const route = Router();
 
+/**
+ * @swagger
+ * tags:
+ *   - name: Region
+ *     description: API для управления регионами
+ */
+
+/**
+ * @swagger
+ * /region:
+ *   get:
+ *     summary: Получить список регионов
+ *     tags: [Region]
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Количество регионов на странице
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Номер страницы
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Поиск по названию региона
+ *       - in: query
+ *         name: sort
+ *         schema:
+ *           type: string
+ *           enum: [ASC, DESC]
+ *         description: Сортировка по названию региона
+ *     responses:
+ *       200:
+ *         description: Список регионов получен
+ */
 route.get("/", async (req, res) => {
   try {
     let limit = Number(req.query.limit) || 10;
@@ -34,6 +73,25 @@ route.get("/", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /region/{id}:
+ *   get:
+ *     summary: Получить регион по ID
+ *     tags: [Region]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID региона
+ *     responses:
+ *       200:
+ *         description: Регион найден
+ *       404:
+ *         description: Регион не найден
+ */
 route.get("/:id", async (req, res) => {
   try {
     let id = req.params.id;
@@ -53,6 +111,29 @@ let regionPostSchema = Joi.object({
   name: Joi.string().min(2).max(55).required(),
 });
 
+/**
+ * @swagger
+ * /region:
+ *   post:
+ *     summary: Создать новый регион
+ *     tags: [Region]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 minLength: 2
+ *                 maxLength: 55
+ *     responses:
+ *       200:
+ *         description: Регион успешно создан
+ *       400:
+ *         description: Регион уже существует или ошибка валидации
+ */
 route.post("/", async (req, res) => {
   try {
     let name = req.body.name;
@@ -77,6 +158,38 @@ let regionPatchSchema = Joi.object({
   name: Joi.string().min(2).max(55).optional(),
 });
 
+/**
+ * @swagger
+ * /region/{id}:
+ *   patch:
+ *     summary: Обновить регион по ID
+ *     tags: [Region]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID региона
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 minLength: 2
+ *                 maxLength: 55
+ *     responses:
+ *       200:
+ *         description: Регион успешно обновлён
+ *       400:
+ *         description: Ошибка валидации данных
+ *       404:
+ *         description: Регион не найден
+ */
 route.patch("/:id", async (req, res) => {
   try {
     let id = req.params.id;
@@ -98,6 +211,25 @@ route.patch("/:id", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /region/{id}:
+ *   delete:
+ *     summary: Удалить регион по ID
+ *     tags: [Region]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID региона
+ *     responses:
+ *       200:
+ *         description: Регион успешно удалён
+ *       404:
+ *         description: Регион не найден
+ */
 route.delete("/:id", async (req, res) => {
   try {
     let id = req.params.id;

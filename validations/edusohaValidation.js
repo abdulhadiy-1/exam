@@ -1,8 +1,8 @@
 const Joi = require("joi");
 
 const edusohaValidation = Joi.object({
-  eduId: Joi.number().integer().required(),
-  sohaId: Joi.number().integer().required(),
+  eduId: Joi.number().required(),
+  sohaId: Joi.number().required(),
 });
 
 module.exports = edusohaValidation;

@@ -7,6 +7,45 @@ const { Middleware, RoleMiddleware } = require("../middlewares/auth");
 
 const route = Router();
 
+/**
+ * @swagger
+ * tags:
+ *   - name: Category
+ *     description: API для управления категориями
+ */
+
+/**
+ * @swagger
+ * /category:
+ *   get:
+ *     summary: Получить список категорий
+ *     tags: [Category]
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Количество категорий на странице
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Номер страницы
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Поиск по названию категории
+ *       - in: query
+ *         name: sort
+ *         schema:
+ *           type: string
+ *           enum: [ASC, DESC]
+ *         description: Сортировка по названию
+ *     responses:
+ *       200:
+ *         description: Список категорий получен
+ */
 route.get("/", async (req, res) => {
   try {
     let limit = Number(req.query.limit) || 10;
@@ -32,6 +71,25 @@ route.get("/", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /category/{id}:
+ *   get:
+ *     summary: Получить категорию по ID
+ *     tags: [Category]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID категории
+ *     responses:
+ *       200:
+ *         description: Категория найдена
+ *       404:
+ *         description: Категория не найдена
+ */
 route.get("/:id", async (req, res) => {
   try {
     const category = await Category.findByPk(req.params.id);
@@ -51,6 +109,32 @@ const categoryPostSchema = Joi.object({
   image: Joi.string().min(2).required(),
 });
 
+/**
+ * @swagger
+ * /category:
+ *   post:
+ *     summary: Создать новую категорию
+ *     tags: [Category]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 minLength: 2
+ *                 maxLength: 55
+ *               image:
+ *                 type: string
+ *                 minLength: 2
+ *     responses:
+ *       200:
+ *         description: Категория успешно создана
+ *       400:
+ *         description: Категория уже существует или ошибка валидации
+ */
 route.post("/", Middleware, RoleMiddleware(["admin"]), async (req, res) => {
   try {
     const { name, image } = req.body;
@@ -77,6 +161,41 @@ const categoryPatchSchema = Joi.object({
   image: Joi.string().min(2).optional(),
 });
 
+/**
+ * @swagger
+ * /category/{id}:
+ *   patch:
+ *     summary: Обновить категорию по ID
+ *     tags: [Category]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID категории
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 minLength: 2
+ *                 maxLength: 55
+ *               image:
+ *                 type: string
+ *                 minLength: 2
+ *     responses:
+ *       200:
+ *         description: Категория успешно обновлена
+ *       400:
+ *         description: Ошибка валидации данных
+ *       404:
+ *         description: Категория не найдена
+ */
 route.patch(
   "/:id",
   Middleware,
@@ -101,6 +220,25 @@ route.patch(
   }
 );
 
+/**
+ * @swagger
+ * /category/{id}:
+ *   delete:
+ *     summary: Удалить категорию по ID
+ *     tags: [Category]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID категории
+ *     responses:
+ *       200:
+ *         description: Категория успешно удалена
+ *       404:
+ *         description: Категория не найдена
+ */
 route.delete(
   "/:id",
   Middleware,

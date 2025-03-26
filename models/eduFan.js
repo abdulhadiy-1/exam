@@ -21,9 +21,10 @@ const EduFan = db.define("eduFan", {
 });
 logger.info("eduFan model is loaded!");
 
-EduFan.hasMany(EduCenter, { foreignKey: "eduId" });
-EduCenter.belongsTo(EduFan, { foreignKey: "eduId" });
-EduFan.hasMany(Fan, { foreignKey: "fanId" });
-Fan.belongsTo(EduCenter, { foreignKey: "fanId" });
+Fan.hasMany(EduFan, { foreignKey: "fanId" });
+EduFan.belongsTo(Fan, { foreignKey: "fanId" });
+
+EduCenter.hasMany(EduFan, { foreignKey: "eduId" });
+EduFan.belongsTo(EduCenter, { foreignKey: "eduId" });
 
 module.exports = EduFan;
