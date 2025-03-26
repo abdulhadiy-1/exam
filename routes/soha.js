@@ -23,7 +23,7 @@ router.post("/", Middleware, upload.single("image"), async (req, res) => {
     const newSoha = { ...req.body, image: req.file?.path || null };
     const soha = await Soha.create(newSoha);
     res.status(201).json(soha);
-    logger.info("Yangi soha qo'shildi");
+    logger.info("A new field has been created.");
   } catch (error) {
     res.status(500).json({ message: error.message });
     logger.error(error.message);
@@ -47,7 +47,7 @@ router.get("/", Middleware, async (req, res) => {
     });
 
     res.json({ total: count, page, limit, data: rows });
-    logger.info("Sohalar ro'yxati olindi");
+    logger.info("Industry have been retrieved.");
   } catch (error) {
     res.status(500).json({ message: error.message });
     logger.error(error.message);
@@ -57,10 +57,10 @@ router.get("/", Middleware, async (req, res) => {
 router.get("/:id", Middleware, async (req, res) => {
   try {
     const soha = await Soha.findByPk(req.params.id);
-    if (!soha) return res.status(404).json({ message: "Soha topilmadi" });
+    if (!soha) return res.status(404).json({ message: "Industry not found." });
 
     res.json(soha);
-    logger.info("Bitta soha olindi");
+    logger.info("A field has been fetched.");
   } catch (error) {
     res.status(500).json({ message: error.message });
     logger.error(error.message);
@@ -74,12 +74,12 @@ router.patch("/:id", Middleware, upload.single("image"), async (req, res) => {
       return res.status(400).json({ message: error.details[0].message });
 
     const soha = await Soha.findByPk(req.params.id);
-    if (!soha) return res.status(404).json({ message: "Soha topilmadi" });
+    if (!soha) return res.status(404).json({ message: "Industry not found." });
 
     const updatedSoha = { ...req.body, image: req.file?.path || soha.image };
     await soha.update(updatedSoha);
     res.json(soha);
-    logger.info("Soha o'zgartirildi");
+    logger.info("Industry changed.");
   } catch (error) {
     res.status(500).json({ message: error.message });
     logger.error(error.message);
@@ -89,11 +89,11 @@ router.patch("/:id", Middleware, upload.single("image"), async (req, res) => {
 router.delete("/:id", Middleware, async (req, res) => {
   try {
     const soha = await Soha.findByPk(req.params.id);
-    if (!soha) return res.status(404).json({ message: "Soha topilmadi" });
+    if (!soha) return res.status(404).json({ message: "Industry not found." });
 
     await soha.destroy();
-    res.json({ message: "Soha o'chirildi" });
-    logger.info("Soha o'chirildi");
+    res.json({ message: "Industry deleted." });
+    logger.info("Industry deleted.");
   } catch (error) {
     res.status(500).json({ message: error.message });
     logger.error(error.message);

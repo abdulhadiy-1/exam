@@ -73,7 +73,7 @@ router.patch("/:id", Middleware, async (req, res) => {
     const comment = await Comment.findByPk(req.params.id);
     if (!comment) return res.status(404).json({ error: "Comment not found" });
     if (req.user.role !== "admin" && req.user.id !== comment.userId) {
-      return res.status(403).json({ message: "нет доступа" });
+      return res.status(403).json({ message: "No access" });
     }
     if (req.body.eduId) {
       let eduCenter = await EduCenter.findByPk(req.body.eduId);
@@ -93,7 +93,7 @@ router.delete("/:id", Middleware, async (req, res) => {
     const comment = await Comment.findByPk(req.params.id);
     if (!comment) return res.status(404).json({ error: "Comment not found" });
     if (req.user.role !== "admin" && req.user.id !== comment.userId) {
-      return res.status(403).json({ message: "нет доступа" });
+      return res.status(403).json({ message: "No access" });
     }
     await comment.destroy();
     res.json({ message: "Comment deleted successfully" });

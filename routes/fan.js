@@ -24,7 +24,7 @@ router.post("/", Middleware, upload.single("image"), async (req, res) => {
     const fan = await Fan.create(newFan);
 
     res.status(201).json(fan);
-    logger.info("Yangi fan qo'shildi");
+    logger.info("A new subject has been created.");
   } catch (error) {
     res.status(500).json({ message: error.message });
     logger.error(error.message);
@@ -48,7 +48,7 @@ router.get("/", Middleware, async (req, res) => {
     });
 
     res.json({ total: count, page, limit, data: rows });
-    logger.info("Fanlar ro'yxati olindi");
+    logger.info("Subjects have been retrieved.");
   } catch (error) {
     res.status(500).json({ message: error.message });
     logger.error(error.message);
@@ -58,10 +58,10 @@ router.get("/", Middleware, async (req, res) => {
 router.get("/:id", Middleware, async (req, res) => {
   try {
     const fan = await Fan.findByPk(req.params.id);
-    if (!fan) return res.status(404).json({ message: "Fan topilmadi" });
+    if (!fan) return res.status(404).json({ message: "Subject not found." });
 
     res.json(fan);
-    logger.info("Bitta fan olindi");
+    logger.info("A subject has been fetched.");
   } catch (error) {
     res.status(500).json({ message: error.message });
     logger.error(error.message);
@@ -75,13 +75,13 @@ router.patch("/:id", Middleware, upload.single("image"), async (req, res) => {
       return res.status(400).json({ message: error.details[0].message });
 
     const fan = await Fan.findByPk(req.params.id);
-    if (!fan) return res.status(404).json({ message: "Fan topilmadi" });
+    if (!fan) return res.status(404).json({ message: "Subject not found." });
 
     const updatedFan = { ...req.body, image: req.file?.path || fan.image };
     await fan.update(updatedFan);
 
     res.json(fan);
-    logger.info("Fan o'zgartirildi");
+    logger.info("Subject changed.");
   } catch (error) {
     res.status(500).json({ message: error.message });
     logger.error(error.message);
@@ -91,11 +91,11 @@ router.patch("/:id", Middleware, upload.single("image"), async (req, res) => {
 router.delete("/:id", Middleware, async (req, res) => {
   try {
     const fan = await Fan.findByPk(req.params.id);
-    if (!fan) return res.status(404).json({ message: "Fan topilmadi" });
+    if (!fan) return res.status(404).json({ message: "Subject not found." });
 
     await fan.destroy();
-    res.json({ message: "Fan o'chirildi" });
-    logger.info("Fan o'chirildi");
+    res.json({ message: "Subject deleted." });
+    logger.info("Subject deleted.");
   } catch (error) {
     res.status(500).json({ message: error.message });
     logger.error(error.message);
