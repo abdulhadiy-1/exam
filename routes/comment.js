@@ -7,32 +7,71 @@ const {
 } = require("../validations/commentValidation");
 const { Middleware } = require("../middlewares/auth");
 const EduCenter = require("../models/EduCenter");
-const { message } = require("../validations/edusohaValidation");
 const logger = require("../middlewares/logger");
 
 const router = express.Router();
+
+/**
+ * @swagger
+ * tags:
+ *   - name: Comment
+ *     description: API for managing comments
+ */
+
+/**
+ * @swagger
+ * /comment:
+ *   post:
+ *     summary: Create a new comment
+ *     tags: [Comment]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               text:
+ *                 type: string
+ *                 minLength: 1
+ *               eduId:
+ *                 type: integer
+ *     responses:
+ *       201:
+ *         description: Comment successfully created
+ *       400:
+ *         description: Validation error
+ *       404:
+ *         description: Educational center not found
+ */
 
 router.post("/", Middleware, async (req, res) => {
   try {
     let userId = req.user.id;
     const { error } = commentValidation.validate(req.body);
-    if (error) {
-      logger.error(error.details[0].message);
-      return res.status(400).json({ error: error.details[0].message });
-    }
+    if (error) return res.status(400).json({ error: error.details[0].message });
     let eduCenter = await EduCenter.findByPk(req.body.eduId);
     if (!eduCenter) {
-      logger.warn("eduCenter not found");
       return res.status(404).json({ message: "eduCenter not found" });
     }
-    const comment = await Comment.create(...req.body, userId);
-    logger.info("New comment created", { comment });
+    const comment = await Comment.create({ ...req.body, userId });
     res.status(201).json(comment);
   } catch (error) {
     logger.error(error.message);
-    res.status(600).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 });
+
+/**
+ * @swagger
+ * /comment:
+ *   get:
+ *     summary: Get a list of comments
+ *     tags: [Comment]
+ *     responses:
+ *       200:
+ *         description: List of comments retrieved successfully
+ */
 
 router.get("/", async (req, res) => {
   try {
@@ -42,11 +81,7 @@ router.get("/", async (req, res) => {
     sort = sort || "id";
     order = order || "ASC";
 
-    const where = search
-      ? {
-          text: { [Op.like]: `%${search}%` },
-        }
-      : {};
+    const where = search ? { text: { [Op.like]: `%${search}%` } } : {};
 
     const { rows, count } = await Comment.findAndCountAll({
       where,
@@ -55,78 +90,124 @@ router.get("/", async (req, res) => {
       offset: (page - 1) * limit,
     });
 
-    logger.info("Fetched comments", { total: count, page, limit });
     res.json({ total: count, page, limit, data: rows });
   } catch (error) {
     logger.error(error.message);
-    res.status(600).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 });
+
+/**
+ * @swagger
+ * /comment/{id}:
+ *   get:
+ *     summary: Get a comment by ID
+ *     tags: [Comment]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Comment ID
+ *     responses:
+ *       200:
+ *         description: Comment found
+ *       404:
+ *         description: Comment not found
+ */
 
 router.get("/:id", async (req, res) => {
   try {
     const comment = await Comment.findByPk(req.params.id);
-    if (!comment) {
-      logger.warn("Comment not found", { id: req.params.id });
-      return res.status(404).json({ error: "Comment not found" });
-    }
+    if (!comment) return res.status(404).json({ error: "Comment not found" });
     res.json(comment);
   } catch (error) {
     logger.error(error.message);
-    res.status(600).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 });
+/**
+ * @swagger
+ * /comment/{id}:
+ *   patch:
+ *     summary: Update a comment by ID
+ *     tags: [Comment]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Comment ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               text:
+ *                 type: string
+ *                 minLength: 1
+ *     responses:
+ *       200:
+ *         description: Comment updated
+ *       400:
+ *         description: Validation error
+ *       404:
+ *         description: Comment not found
+ */
 
 router.patch("/:id", Middleware, async (req, res) => {
   try {
     const { error } = patchValidation.validate(req.body);
-    if (error) {
-      logger.error(error.details[0].message);
-      return res.status(400).json({ error: error.details[0].message });
-    }
-
+    if (error) return res.status(400).json({ error: error.details[0].message });
     const comment = await Comment.findByPk(req.params.id);
-    if (!comment) {
-      logger.warn("Comment not found", { id: req.params.id });
-      return res.status(404).json({ error: "Comment not found" });
-    }
+    if (!comment) return res.status(404).json({ error: "Comment not found" });
     if (req.user.role !== "admin" && req.user.id !== comment.userId) {
-      logger.warn("No access to update comment", { userId: req.user.id });
       return res.status(403).json({ message: "No access" });
     }
-    if (req.body.eduId) {
-      let eduCenter = await EduCenter.findByPk(req.body.eduId);
-      if (!eduCenter) {
-        logger.warn("eduCenter not found", { eduId: req.body.eduId });
-        return res.status(404).json({ message: "eduCenter not found" });
-      }
-    }
     await comment.update(req.body);
-    logger.info("Comment updated", { id: req.params.id });
     res.json(comment);
   } catch (error) {
     logger.error(error.message);
-    res.status(600).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 });
+
+/**
+ * @swagger
+ * /comment/{id}:
+ *   delete:
+ *     summary: Delete a comment by ID
+ *     tags: [Comment]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Comment ID
+ *     responses:
+ *       200:
+ *         description: Comment deleted
+ *       404:
+ *         description: Comment not found
+ */
 
 router.delete("/:id", Middleware, async (req, res) => {
   try {
     const comment = await Comment.findByPk(req.params.id);
-    if (!comment) {
-      logger.warn("Comment not found", { id: req.params.id });
-      return res.status(404).json({ error: "Comment not found" });
-    }
+    if (!comment) return res.status(404).json({ error: "Comment not found" });
     if (req.user.role !== "admin" && req.user.id !== comment.userId) {
-      logger.warn("No access to delete comment", { userId: req.user.id });
       return res.status(403).json({ message: "No access" });
     }
     await comment.destroy();
-    logger.info("Comment deleted", { id: req.params.id });
     res.json({ message: "Comment deleted successfully" });
   } catch (error) {
     logger.error(error.message);
-    res.status(600).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 });
 

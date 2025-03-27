@@ -1,5 +1,4 @@
 const express = require("express");
-const multer = require("multer");
 const { Op } = require("sequelize");
 const Fan = require("../models/fan");
 const fanValidation = require("../validations/fanValidation");
@@ -8,20 +7,47 @@ const { Middleware } = require("../middlewares/auth");
 
 const router = express.Router();
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "uploads/fan"),
-  filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname),
-});
-const upload = multer({ storage });
+/**
+ * @swagger
+ * tags:
+ *   name: Fan
+ *   description: API for managing subjects (fan)
+ */
 
-router.post("/", Middleware, upload.single("image"), async (req, res) => {
+/**
+ * @swagger
+ * /fan:
+ *   post:
+ *     summary: Create a new subject
+ *     tags: [Fan]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 minLength: 2
+ *               image:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Subject created
+ *       400:
+ *         description: Data validation error
+ *       500:
+ *         description: Internal server error
+ */
+
+router.post("/", Middleware, async (req, res) => {
   try {
     const { error } = fanValidation.validate(req.body);
     if (error)
       return res.status(400).json({ message: error.details[0].message });
 
-    const newFan = { ...req.body, image: req.file?.path || null };
-    const fan = await Fan.create(newFan);
+    const fan = await Fan.create(req.body);
 
     res.status(201).json(fan);
     logger.info("A new subject has been created.");
@@ -30,6 +56,46 @@ router.post("/", Middleware, upload.single("image"), async (req, res) => {
     logger.error(error.message);
   }
 });
+
+/**
+ * @swagger
+ * /fan:
+ *   get:
+ *     summary: Get a list of subjects
+ *     tags: [Fan]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number (default is 1)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of records per page (default is 10)
+ *       - in: query
+ *         name: sort
+ *         schema:
+ *           type: string
+ *         description: Field to sort by (default is id)
+ *       - in: query
+ *         name: order
+ *         schema:
+ *           type: string
+ *           enum: [ASC, DESC]
+ *         description: Sorting order (default is ASC)
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search by name
+ *     responses:
+ *       200:
+ *         description: List of subjects
+ *       500:
+ *         description: Internal server error
+ */
 
 router.get("/", Middleware, async (req, res) => {
   try {
@@ -55,6 +121,28 @@ router.get("/", Middleware, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /fan/{id}:
+ *   get:
+ *     summary: Get a subject by ID
+ *     tags: [Fan]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Subject ID
+ *     responses:
+ *       200:
+ *         description: Subject information
+ *       404:
+ *         description: Subject not found
+ *       500:
+ *         description: Internal server error
+ */
+
 router.get("/:id", Middleware, async (req, res) => {
   try {
     const fan = await Fan.findByPk(req.params.id);
@@ -67,8 +155,46 @@ router.get("/:id", Middleware, async (req, res) => {
     logger.error(error.message);
   }
 });
+/**
+ * @swagger
+ * /fan/{id}:
+ *   patch:
+ *     summary: Update a subject by ID
+ *     tags: [Fan]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Subject ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 minLength: 2
+ *               description:
+ *                 type: string
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Subject updated
+ *       400:
+ *         description: Data validation error
+ *       404:
+ *         description: Subject not found
+ *       500:
+ *         description: Internal server error
+ */
 
-router.patch("/:id", Middleware, upload.single("image"), async (req, res) => {
+router.patch("/:id", Middleware, async (req, res) => {
   try {
     const { error } = fanValidation.validate(req.body);
     if (error)
@@ -87,6 +213,27 @@ router.patch("/:id", Middleware, upload.single("image"), async (req, res) => {
     logger.error(error.message);
   }
 });
+/**
+ * @swagger
+ * /fan/{id}:
+ *   delete:
+ *     summary: Delete a subject by ID
+ *     tags: [Fan]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Subject ID
+ *     responses:
+ *       200:
+ *         description: Subject deleted
+ *       404:
+ *         description: Subject not found
+ *       500:
+ *         description: Internal server error
+ */
 
 router.delete("/:id", Middleware, async (req, res) => {
   try {
