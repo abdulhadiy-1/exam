@@ -7,6 +7,9 @@ const UserRoute = require("./routes/user");
 const CategoryRoute = require("./routes/category");
 const ResursRoute = require("./routes/resurs");
 const FanRoute = require("./routes/fan");
+const EduCenterRoutes = require("./routes/EduCenterRoutes");
+const fillialRoutes = require("./routes/fillialRoutes");
+const likedRoutes = require("./routes/likedRoutes");
 const SohaRoute = require("./routes/soha");
 const CourseRegisterRoute = require("./routes/courseRegister");
 const CommentRoute = require("./routes/comment");
@@ -40,6 +43,9 @@ app.use("/courseRegister", CourseRegisterRoute);
 app.use("/comments", CommentRoute);
 app.use("/soha", SohaRoute);
 app.use("/fan", FanRoute);
+app.use("/Educenter",EduCenterRoutes);
+app.use("/fillial", fillialRoutes);
+app.use("/liked",likedRoutes);
 
 app.listen(3000, () => {
   console.log("Server is running on port 3000");
