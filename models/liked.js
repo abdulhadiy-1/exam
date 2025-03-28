@@ -1,7 +1,9 @@
 const { DataTypes } = require("sequelize");
 const { db } = require("../config/db");
+const User = require("./user");
+const EduCenter = require("./EduCenter");
 
-const liked = db.define("liked", {
+const Liked = db.define("liked", {
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
@@ -10,11 +12,27 @@ const liked = db.define("liked", {
   userId: {
     type: DataTypes.INTEGER,
     allowNull: false,
+    references: {
+      model: User,
+      key: "id",
+    },
+    onDelete: "CASCADE",
   },
   eduId: {
     type: DataTypes.INTEGER,
     allowNull: false,
+    references: {
+      model: EduCenter,
+      key: "id",
+    },
+    onDelete: "CASCADE",
   },
 });
 
-module.exports = liked;
+User.hasMany(Liked, { foreignKey: "userId", as: "likes" });
+Liked.belongsTo(User, { foreignKey: "userId", as: "user" });
+
+EduCenter.hasMany(Liked, { foreignKey: "eduId", as: "likes" });
+Liked.belongsTo(EduCenter, { foreignKey: "eduId", as: "eduCenter" });
+
+module.exports = Liked;

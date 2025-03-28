@@ -123,9 +123,9 @@ const resursPostSchema = Joi.object({
 });
 /**
  * @swagger
- * /resurs:
- *   post:
- *     summary: Создать новый ресурс
+ * /resurs/{id}:
+ *   patch:
+ *     summary: Получить ресурс по ID
  *     tags: [Resources]
  *     requestBody:
  *       required: true

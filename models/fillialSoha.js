@@ -2,15 +2,15 @@ const { DataTypes } = require("sequelize");
 const { db } = require("../config/db");
 const logger = require("../middlewares/logger");
 const Soha = require("./soha");
-const EduCenter = require("./EduCenter");
+const Fillial = require("./fillial");
 
-const EduSoha = db.define("eduSoha", {
+const FillialSoha = db.define("fillialSoha", {
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true,
   },
-  eduId: {
+  fillialId: {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
@@ -19,9 +19,9 @@ const EduSoha = db.define("eduSoha", {
     allowNull: false,
   },
 });
-logger.info("eduSoha model is loaded!");
+logger.info("fillialSoha model is loaded!");
 
-Soha.belongsToMany(EduCenter, {  through: EduSoha,as: "sohas", foreignKey: "sohaId", });
-EduCenter.belongsToMany(Soha, {  through: EduSoha,as: "sohas", foreignKey: "eduId", });
+Soha.belongsToMany(Fillial, {  through: FillialSoha,as: "sohalars", foreignKey: "sohaId", });
+Fillial.belongsToMany(Soha, {  through: FillialSoha,as: "sohalars", foreignKey: "fillialId", });
 
-module.exports = EduSoha;
+module.exports = FillialSoha;

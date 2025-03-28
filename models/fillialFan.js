@@ -2,15 +2,15 @@ const { DataTypes } = require("sequelize");
 const { db } = require("../config/db");
 const logger = require("../middlewares/logger");
 const Fan = require("./fan");
-const EduCenter = require("./EduCenter");
+const Fillial = require("./fillial");
 
-const EduFan = db.define("eduFan", {
+const FillialFan = db.define("fillialFan", {
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true,
   },
-  eduId: {
+  fillialId: {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
@@ -19,10 +19,9 @@ const EduFan = db.define("eduFan", {
     allowNull: false,
   },
 });
-logger.info("eduFan model is loaded!");
+logger.info("fillialFan model is loaded!");
 
-Fan.belongsToMany(EduCenter, {  through: EduFan,as: "fans", foreignKey: "fanId", });
-EduCenter.belongsToMany(Fan, {  through: EduFan, as: "fans",foreignKey: "eduId", });
+Fan.belongsToMany(Fillial, {  through: FillialFan,as: "fanlars", foreignKey: "fanId", });
+Fillial.belongsToMany(Fan, {  through: FillialFan,as: "fanlars", foreignKey: "fillialId", });
 
-
-module.exports = EduFan;
+module.exports = FillialFan;

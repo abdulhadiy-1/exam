@@ -3,6 +3,7 @@ const Region = require("../models/region");
 const { Router } = require("express");
 const logger = require("../middlewares/logger");
 const Joi = require("joi");
+const { Middleware, RoleMiddleware } = require("../middlewares/auth");
 const route = Router();
 
 /**
@@ -68,7 +69,7 @@ route.get("/", async (req, res) => {
     res.json({ total: regions.count, data: regions.rows });
     logger.info("All regions retrieved");
   } catch (error) {
-    res.status(600).json({ message: error.message });
+    res.status(500).json({ message: error.message });
     logger.error(error.message);
   }
 });
@@ -102,7 +103,7 @@ route.get("/:id", async (req, res) => {
     res.json(region);
     logger.info("Region retrieved by ID");
   } catch (error) {
-    res.status(600).json({ message: error.message });
+    res.status(500).json({ message: error.message });
     logger.error(error.message);
   }
 });
@@ -134,7 +135,7 @@ let regionPostSchema = Joi.object({
  *       400:
  *         description: Регион уже существует или ошибка валидации
  */
-route.post("/", async (req, res) => {
+route.post("/", Middleware, RoleMiddleware(["admin"]), async (req, res) => {
   try {
     let name = req.body.name;
     const region = await Region.findOne({ where: { name: name } });
@@ -149,7 +150,7 @@ route.post("/", async (req, res) => {
     res.json(newRegion);
     logger.info("Region created");
   } catch (error) {
-    res.status(600).json({ message: error.message });
+    res.status(500).json({ message: error.message });
     logger.error(error.message);
   }
 });
@@ -190,7 +191,7 @@ let regionPatchSchema = Joi.object({
  *       404:
  *         description: Регион не найден
  */
-route.patch("/:id", async (req, res) => {
+route.patch("/:id", Middleware, RoleMiddleware(["admin", "super-admin"]), async (req, res) => {
   try {
     let id = req.params.id;
     const region = await Region.findByPk(id);
@@ -206,7 +207,7 @@ route.patch("/:id", async (req, res) => {
     res.json(region);
     logger.info("Region updated");
   } catch (error) {
-    res.status(600).json({ message: error.message });
+    res.status(500).json({ message: error.message });
     logger.error(error.message);
   }
 });
@@ -230,7 +231,7 @@ route.patch("/:id", async (req, res) => {
  *       404:
  *         description: Регион не найден
  */
-route.delete("/:id", async (req, res) => {
+route.delete("/:id", Middleware, RoleMiddleware(["admin"]), async (req, res) => {
   try {
     let id = req.params.id;
     const region = await Region.findByPk(id);
@@ -241,7 +242,7 @@ route.delete("/:id", async (req, res) => {
     res.json({ message: "Region deleted" });
     logger.info("Region deleted");
   } catch (error) {
-    res.status(600).json({ message: error.message });
+    res.status(500).json({ message: error.message });
     logger.error(error.message);
   }
 });

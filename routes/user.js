@@ -17,7 +17,7 @@ const route = Router();
 
 /**
  * @swagger
- * /users:
+ * /user:
  *   get:
  *     summary: Получить список пользователей
  *     tags: [Users]
@@ -90,14 +90,14 @@ route.get("/", Middleware, RoleMiddleware(["admin"]), async (req, res) => {
     res.json({ total: users.count, data: users.rows });
     logger.info("All users retrieved");
   } catch (error) {
-    res.status(600).json({ message: error.message });
+    res.status(500).json({ message: error.message });
     logger.error(error.message);
   }
 });
 
 /**
  * @swagger
- * /users/{id}:
+ * /user/{id}:
  *   get:
  *     summary: Получить пользователя по ID
  *     tags: [Users]
@@ -124,14 +124,14 @@ route.get("/:id", Middleware, RoleMiddleware(["admin"]), async (req, res) => {
     res.json(user);
     logger.info("User retrieved by ID");
   } catch (error) {
-    res.status(600).json({ message: error.message });
+    res.status(500).json({ message: error.message });
     logger.error(error.message);
   }
 });
 
 /**
  * @swagger
- * /users/{id}:
+ * /user/{id}:
  *   patch:
  *     summary: Обновить пользователя по ID
  *     tags: [Users]
@@ -155,32 +155,43 @@ route.get("/:id", Middleware, RoleMiddleware(["admin"]), async (req, res) => {
  *                 maxLength: 55
  *               phone:
  *                 type: string
- *                 pattern: "^\+\d{12}$"
+ *                 pattern: "^\\+\\d{12}$"
  *               role:
  *                 type: string
  *                 enum: [admin, user, super-admin]
  *     responses:
  *       200:
- *         description: Пользователь успешно обновлён
+ *         description: Пользователь обновлен
  *       400:
- *         description: Ошибка валидации данных
+ *         description: Ошибка валидации
  *       403:
- *         description: Нет прав для обновления данного пользователя
+ *         description: Доступ запрещен
  *       404:
  *         description: Пользователь не найден
  */
+
 route.patch("/:id", Middleware, async (req, res) => {
   try {
-    let id = req.params.id;
+    let id = Number(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ message: "Invalid user ID" });
+    }
+
     const user = await User.findByPk(id);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
+
     if (req.user.role === "user" && req.user.id !== user.id) {
       return res
         .status(403)
         .json({ message: "You do not have permission to update this user" });
-      }
+    }
+
+    if (req.user.role === "user" && req.body.role) {
+      return res.status(403).json({ message: "You cannot change role" });
+    }
+
     const schema = Joi.object({
       fullName: Joi.string().min(2).max(55).optional(),
       phone: Joi.string()
@@ -188,18 +199,21 @@ route.patch("/:id", Middleware, async (req, res) => {
         .optional(),
       role: Joi.string().valid("admin", "user", "super-admin").optional(),
     });
+
     let { error } = schema.validate(req.body);
     if (error) {
       return res.status(400).json({ message: error.details[0].message });
     }
+
     await user.update(req.body);
     res.json(user);
     logger.info("User updated");
   } catch (error) {
-    res.status(600).json({ message: error.message });
+    res.status(500).json({ message: error.message });
     logger.error(error.message);
   }
 });
+
 
 /**
  * @swagger
@@ -238,7 +252,7 @@ route.delete("/:id", Middleware, async (req, res) => {
     res.json({ message: "User deleted" });
     logger.info("User deleted");
   } catch (error) {
-    res.status(600).json({ message: error.message });
+    res.status(500).json({ message: error.message });
     logger.error(error.message);
   }
 });

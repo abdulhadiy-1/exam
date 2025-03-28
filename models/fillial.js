@@ -26,11 +26,11 @@ const fillial = db.define("fillial", {
     allowNull: false,
   },
   fanlar: {
-    type: DataTypes.STRING,
+    type: DataTypes.JSON,
     allowNull: false,
   },
   sohalar: {
-    type: DataTypes.STRING,
+    type: DataTypes.JSON,
     allowNull: false,
   },
   eduId: {

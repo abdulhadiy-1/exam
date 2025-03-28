@@ -1,9 +1,10 @@
-{"level":"error","message":"WHERE parameter \"name\" has invalid \"undefined\" value","service":"user-service","timestamp":"2025-03-24T12:10:23.889Z"}
-{"level":"error","message":"Unknown column 'user.sort' in 'where clause'","service":"user-service","timestamp":"2025-03-25T10:41:06.971Z"}
-{"level":"error","message":"Unknown column 'user.name' in 'order clause'","service":"user-service","timestamp":"2025-03-25T10:42:28.537Z"}
-{"level":"error","message":"Unknown column 'user.name' in 'order clause'","service":"user-service","timestamp":"2025-03-25T10:42:29.489Z"}
-{"level":"error","message":"Unknown column 'user.name' in 'order clause'","service":"user-service","timestamp":"2025-03-25T10:42:30.105Z"}
-{"level":"error","message":"Unknown column 'user.name' in 'order clause'","service":"user-service","timestamp":"2025-03-25T10:42:30.609Z"}
-{"level":"error","message":"Unknown column 'user.name' in 'order clause'","service":"user-service","timestamp":"2025-03-25T10:42:31.012Z"}
-{"level":"error","message":"Unknown column 'user.name' in 'order clause'","service":"user-service","timestamp":"2025-03-25T10:42:31.454Z"}
-{"level":"error","message":"Unknown column 'user.name' in 'order clause'","service":"user-service","timestamp":"2025-03-25T10:42:32.373Z"}
+{"level":"error","message":"region is associated to eduCenter using an alias. You've included an alias (regions), but it does not match the alias(es) defined in your association (region).","service":"user-service","timestamp":"2025-03-27T13:02:10.853Z"}
+{"level":"error","message":"user is associated to comments using an alias. You've included an alias (users), but it does not match the alias(es) defined in your association (user).","service":"user-service","timestamp":"2025-03-27T13:02:24.499Z"}
+{"level":"error","message":"Cannot add or update a child row: a foreign key constraint fails (`n17`.`users`, CONSTRAINT `users_ibfk_1` FOREIGN KEY (`regionId`) REFERENCES `regions` (`id`) ON DELETE SET NULL ON UPDATE CASCADE)","service":"user-service","timestamp":"2025-03-27T13:05:13.758Z"}
+{"level":"error","message":"Cannot add or update a child row: a foreign key constraint fails (`n17`.`users`, CONSTRAINT `users_ibfk_1` FOREIGN KEY (`regionId`) REFERENCES `regions` (`id`) ON DELETE SET NULL ON UPDATE CASCADE)","service":"user-service","timestamp":"2025-03-27T13:07:26.051Z"}
+{"level":"error","message":"Cannot add or update a child row: a foreign key constraint fails (`n17`.`users`, CONSTRAINT `users_ibfk_1` FOREIGN KEY (`regionId`) REFERENCES `regions` (`id`) ON DELETE SET NULL ON UPDATE CASCADE)","service":"user-service","timestamp":"2025-03-27T13:07:28.789Z"}
+{"level":"error","message":"Cannot add or update a child row: a foreign key constraint fails (`n17`.`users`, CONSTRAINT `users_ibfk_1` FOREIGN KEY (`regionId`) REFERENCES `regions` (`id`) ON DELETE SET NULL ON UPDATE CASCADE)","service":"user-service","timestamp":"2025-03-27T13:07:51.981Z"}
+{"level":"error","message":"Cannot add or update a child row: a foreign key constraint fails (`n17`.`users`, CONSTRAINT `users_ibfk_1` FOREIGN KEY (`regionId`) REFERENCES `regions` (`id`) ON DELETE SET NULL ON UPDATE CASCADE)","service":"user-service","timestamp":"2025-03-27T13:13:03.335Z"}
+{"level":"error","message":"deviceDetector.parse is not a function","service":"user-service","timestamp":"2025-03-27T13:18:13.614Z"}
+{"level":"error","message":"deviceDetector.parse is not a function","service":"user-service","timestamp":"2025-03-27T13:19:38.652Z"}
+{"level":"error","message":"Cannot add or update a child row: a foreign key constraint fails (`n17`.`educenters`, CONSTRAINT `educenters_ibfk_1` FOREIGN KEY (`regionId`) REFERENCES `regions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE)","service":"user-service","timestamp":"2025-03-28T15:52:23.327Z"}

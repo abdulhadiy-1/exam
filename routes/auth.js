@@ -8,11 +8,17 @@ const { totp } = require("otplib");
 const nodemailer = require("nodemailer");
 const Region = require("../models/region");
 const jwt = require("jsonwebtoken");
+const Session = require("../models/session");
+const DeviceDetector = require("device-detector-js");
+const deviceDetector = new DeviceDetector();
+
+
 const {
   generateAccessToken,
   generateRefreshToken,
 } = require("../middlewares/genToken");
-const { ReMiddleware } = require("../middlewares/auth");
+const { ReMiddleware, Middleware } = require("../middlewares/auth");
+const { Op } = require("sequelize");
 
 totp.options = {
   step: 300,
@@ -49,10 +55,23 @@ async function sendMail(email, otp) {
 
 /**
  * @swagger
- * /auth/me:
+ * tags:
+ *   - name: Session
+ *     description: Session management APIs
+ */
+
+/**
+ * @swagger
+ * /auth/me/{ip}:
  *   get:
  *     summary: Get current user info
  *     tags: [User]
+ *     parameters:
+ *       - in: path
+ *         name: ip
+ *         required: true
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: User info retrieved successfully
@@ -61,31 +80,38 @@ async function sendMail(email, otp) {
  *       403:
  *         description: Invalid or expired token
  */
-route.get("/me", async (req, res) => {
+route.get("/me/:ip", Middleware, async (req, res) => {
   try {
-    const token = req.header("Authorization")?.split(" ")[1];
-    if (!token) {
-      return res.status(401).json({ message: "Unauthorized" });
+    let { ip } = req.params;
+
+    let session = await Session.findOne({
+      where: {
+        [Op.and]: [{ ip }, { userId: req.user.id }],
+      },
+    });
+
+    if (!session) {
+      return res.status(400).json({ message: "No sessions found, please login" });
     }
-    let decoded;
-    try {
-      decoded = jwt.verify(token, "soz");
-    } catch (error) {
-      return res.status(403).json({ message: "Invalid or expired token" });
-    }
-    const user = await User.findByPk(decoded.id, {
+
+    const user = await User.findByPk(session.userId, {
       attributes: ["id", "fullName", "email", "phone", "role", "status"],
     });
+
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
+
     res.json(user);
     logger.info("User info sent!");
   } catch (error) {
-    res.status(401).json({ message: "Problem with token.", error: error.message });
+    res
+      .status(401)
+      .json({ message: "Problem with token.", error: error.message });
     logger.error(error.message);
   }
 });
+
 /**
  * @swagger
  * /auth/register:
@@ -118,6 +144,8 @@ route.get("/me", async (req, res) => {
  *                 type: integer
  *               year:
  *                 type: integer
+ *               role:
+ *                 type: string
  *     responses:
  *       200:
  *         description: User created, OTP sent to email
@@ -128,56 +156,65 @@ route.get("/me", async (req, res) => {
  */
 route.post("/register", async (req, res) => {
   let newYear = new Date().getFullYear();
+  req.body.role = req.body.role || "user";
+
   const schema = Joi.object({
     fullName: Joi.string().min(2).max(55).required(),
     email: Joi.string().email().required(),
     password: Joi.string().min(6).max(55).required(),
-    phone: Joi.string()
-      .pattern(/^\+\d{12}$/)
-      .required(),
-    role: Joi.string().valid("admin", "user", "super-admin", "seo").optional(),
-    regionId: Joi.number().required(),
-    year: Joi.number()
-      .min(newYear - 149)
-      .max(newYear)
-      .required(),
+    phone: Joi.string().pattern(/^\+\d{12}$/).required(),
+    role: Joi.string().valid("admin", "user", "super-admin", "CEO").optional(),
+    regionId: Joi.number().integer().positive().allow(null),
+    year: Joi.number().min(newYear - 149).max(newYear - 18).required(),
   });
 
-  let role = req.body.role || "user";
   const { error } = schema.validate(req.body);
   if (error) {
     return res.status(400).json({ message: error.details[0].message });
   }
-  if (req.body.year > newYear - 18) {
-    return res.status(400).json({ message: "You must be at least 18 years old" });
-  }
-  const { email, password } = req.body;
+
+  const { email, password, phone, regionId, role } = req.body;
 
   try {
     let user = await User.findOne({ where: { email } });
     if (user) {
       return res.status(400).json({ message: "User with this email already exists" });
     }
-    let region = await Region.findByPk(req.body.regionId);
-    if (!region) {
-      return res.status(400).json({ message: "Region not found" });
+
+    let phoneUser = await User.findOne({ where: { phone } });
+    if (phoneUser) {
+      return res.status(400).json({ message: "User with this phone number already exists" });
     }
+
+    if (role !== "admin") {
+      let region = await Region.findByPk(regionId);
+      if (!region) {
+        return res.status(400).json({ message: "Region not found" });
+      }
+    }
+
     let hash = await bcrypt.hash(password, 10);
     let otp = totp.generate(email + "soz");
+
     const newUser = await User.create({
       ...req.body,
       password: hash,
       role,
+      regionId: role === "admin" ? null : regionId, 
       status: "pending",
     });
+
     await sendMail(email, otp);
+
     res.json({ newUser, message: `User created, OTP sent to ${email}!` });
-    logger.info("User created!");
+    logger.info(`User created: ${email}`);
   } catch (error) {
-    res.status(600).json({ message: error.message });
+    res.status(500).json({ message: error.message });
     logger.error(error.message);
   }
 });
+
+
 
 /**
  * @swagger
@@ -205,14 +242,16 @@ route.post("/send-otp", async (req, res) => {
     let { email } = req.body;
     let user = await User.findOne({ where: { email } });
     if (!user) {
-      return res.status(404).json({ message: "User with this email not found" });
+      return res
+        .status(404)
+        .json({ message: "User with this email not found" });
     }
     let otp = totp.generate(email + "soz");
     await sendMail(email, otp);
     res.json({ message: `OTP sent to ${email}!` });
     logger.info("OTP sent!");
   } catch (error) {
-    res.status(600).json({ message: error.message });
+    res.status(500).json({ message: error.message });
     logger.error(error.message);
   }
 });
@@ -249,13 +288,15 @@ route.post("/verify", async (req, res) => {
     }
     let user = await User.findOne({ where: { email } });
     if (!user) {
-      return res.status(404).json({ message: "User with this email not found" });
+      return res
+        .status(404)
+        .json({ message: "User with this email not found" });
     }
     await user.update({ status: "active" });
     res.json({ message: "User verified!" });
     logger.info("User verified!");
   } catch (error) {
-    res.status(600).json({ message: error.message });
+    res.status(500).json({ message: error.message });
     logger.error(error.message);
   }
 });
@@ -277,6 +318,8 @@ route.post("/verify", async (req, res) => {
  *                 type: string
  *               password:
  *                 type: string
+ *               ip:
+ *                 type: string
  *     responses:
  *       200:
  *         description: Login successful
@@ -285,26 +328,97 @@ route.post("/verify", async (req, res) => {
  */
 route.post("/login", async (req, res) => {
   try {
-    let { email, password } = req.body;
+    let { email, password, ip } = req.body;
+
     let user = await User.findOne({ where: { email } });
     if (!user) {
       return res.status(404).json({ message: "User with this email not found" });
     }
-    let isActive = user.status === "active";
-    if (!isActive) {
+
+    if (user.status !== "active") {
       return res.status(400).json({ message: "User is not verified" });
     }
+
     let isValid = await bcrypt.compare(password, user.password);
     if (!isValid) {
       return res.status(400).json({ message: "Incorrect password" });
     }
+
+    let session = await Session.findOne({
+      where: {
+        [Op.and]: [{ ip }, { userId: user.id }],
+      },
+    });
+
+    if (!session) {
+      let deviceData = deviceDetector.parse(req.headers["user-agent"]);
+      await Session.create({
+        userId: user.id,
+        ip,
+        data: deviceData, 
+      });
+    }
+
     let AccessToken = generateAccessToken(user);
     let RefreshToken = generateRefreshToken(user);
+
     res.json({ message: "You are logged in", AccessToken, RefreshToken });
-    logger.info("User logged in!");
+    logger.info(`User ${user.id} logged in from IP: ${ip}`);
   } catch (error) {
-    res.status(600).json({ message: error.message });
+    res.status(500).json({ message: error.message });
     logger.error(error.message);
+  }
+});
+
+
+
+/**
+ * @swagger
+ * /auth/my-sessions:
+ *   get:
+ *     summary: Получить все сессии пользователя
+ *     tags: [Session]
+ *     responses:
+ *       200:
+ *         description: Список сессий пользователя
+ */
+route.get("/my-sessions", Middleware, async (req, res) => {
+  try {
+    let sessions = await Session.findAll({ where: { userId: req.user.id } });
+    res.json(sessions);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ message: "server error" });
+  }
+});
+
+/**
+ * @swagger
+ * /auth/delete-session/{id}:
+ *   delete:
+ *     summary: Удалить сессию по ID
+ *     tags: [Session]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Сессия удалена
+ *       404:
+ *         description: Сессия не найдена
+ */
+route.delete("/delete-session/:id", Middleware, async (req, res) => {
+  try {
+    let sessions = await Session.findByPk(req.params.id);
+    if (!sessions) return res.status(404).send({ message: "session not found" });
+    await sessions.destroy();
+    res.send({ message: "session deleted" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ message: "server error" });
   }
 });
 
@@ -338,7 +452,9 @@ route.post("/change-password", async (req, res) => {
     let { email, password, newPassword } = req.body;
     let user = await User.findOne({ where: { email } });
     if (!user) {
-      return res.status(404).json({ message: "User with this email not found" });
+      return res
+        .status(404)
+        .json({ message: "User with this email not found" });
     }
     let isValid = await bcrypt.compare(password, user.password);
     if (!isValid) {
@@ -349,7 +465,41 @@ route.post("/change-password", async (req, res) => {
     res.json({ message: "Password changed!" });
     logger.info("Password changed!");
   } catch (error) {
-    res.status(600).json({ message: error.message });
+    res.status(500).json({ message: error.message });
+    logger.error(error.message);
+  }
+});
+
+/**
+ * @swagger
+ * /auth/refresh-token:
+ *   post:
+ *     summary: Обновление AccessToken
+ *     description: Генерирует новый AccessToken для пользователя.
+ *     tags: [User]
+ *     responses:
+ *       200:
+ *         description: Успешное обновление токена
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 AccessToken:
+ *                   type: string
+ *       401:
+ *         description: Пользователь не авторизован
+ *       500:
+ *         description: Внутренняя ошибка сервера
+ */
+route.post("/refresh-token", ReMiddleware, async (req, res) => {
+  try {
+    let { user } = req;
+    let AccessToken = generateAccessToken(user);
+    res.json({ AccessToken });
+    logger.info("Token refreshed!");
+  } catch (error) {
+    res.status(500).json({ message: error.message });
     logger.error(error.message);
   }
 });

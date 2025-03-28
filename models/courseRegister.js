@@ -38,8 +38,8 @@ logger.info("courseRegister model is loaded!");
 EduCenter.hasMany(CourseRegister, { foreignKey: "eduId" });
 CourseRegister.belongsTo(EduCenter, { foreignKey: "eduId" });
 
-Fillial.hasMany(CourseRegister, { foreignKey: "filialId" });
-CourseRegister.belongsTo(Fillial, { foreignKey: "filialId" });
+Fillial.hasMany(CourseRegister, { foreignKey: "fillialId" });
+CourseRegister.belongsTo(Fillial, { foreignKey: "fillialId" });
 
 User.hasMany(CourseRegister, { foreignKey: "userId" });
 CourseRegister.belongsTo(User, { foreignKey: "userId" });

@@ -2,16 +2,23 @@ const { Router } = require("express");
 const Liked = require("../models/liked");
 const { Op } = require("sequelize");
 const logger = require("../middlewares/logger");
-const Joi = require("joi");
+const joi = require("joi");
 const { Middleware, RoleMiddleware } = require("../middlewares/auth");
+const User = require("../models/user");
+const EduCenter = require("../models/EduCenter");
 
 const route = Router();
 
 /**
  * @swagger
+ * tags:
+ *   name: Liked
+ *   description: API for managing liked items
+ *
  * /liked:
  *   get:
  *     summary: Get all liked items
+ *     tags: [Liked]
  *     parameters:
  *       - in: query
  *         name: limit
@@ -43,16 +50,30 @@ route.get("/", async (req, res) => {
 
     let where = {};
     if (userId) {
-      where.userId = { [Op.eq]: userId };
+      where.userId = userId;
     }
 
-    let likedItems = await Liked.findAll({ where, limit, offset });
-    if (!likedItems.length)
-      return res.status(404).json({ message: "No liked items found" });
+    let likedItems = await Liked.findAll({
+      where,
+      include: [
+        {
+          model: EduCenter,
+          as: "eduCenter",
+          attributes: ["id", "name", "image"],
+        },
+        {
+          model: User,
+          as: "user",
+          attributes: ["id", "fullName", "email"],
+        },
+      ],
+      limit,
+      offset,
+    });
 
     res.json(likedItems);
   } catch (error) {
-    res.status(600).json({ message: error.message });
+    res.status(500).json({ message: error.message });
     logger.error(error.message);
   }
 });
@@ -62,6 +83,7 @@ route.get("/", async (req, res) => {
  * /liked/{id}:
  *   get:
  *     summary: Get a liked item by ID
+ *     tags: [Liked]
  *     parameters:
  *       - in: path
  *         name: id
@@ -77,13 +99,27 @@ route.get("/", async (req, res) => {
 route.get("/:id", async (req, res) => {
   try {
     let { id } = req.params;
-    let likedItem = await Liked.findByPk(id);
+    let likedItem = await Liked.findByPk(id, {
+      include: [
+        {
+          model: EduCenter,
+          as: "eduCenter",
+          attributes: ["id", "name", "image"],
+        },
+        {
+          model: User,
+          as: "user",
+          attributes: ["id", "fullName", "email"],
+        },
+      ],
+    });
+
     if (!likedItem)
       return res.status(404).json({ message: "Liked item not found" });
 
     res.json(likedItem);
   } catch (error) {
-    res.status(600).json({ message: error.message });
+    res.status(500).json({ message: error.message });
     logger.error(error.message);
   }
 });
@@ -93,6 +129,7 @@ route.get("/:id", async (req, res) => {
  * /liked:
  *   post:
  *     summary: Like an item
+ *     tags: [Liked]
  *     requestBody:
  *       required: true
  *       content:
@@ -103,8 +140,6 @@ route.get("/:id", async (req, res) => {
  *               - userId
  *               - eduId
  *             properties:
- *               userId:
- *                 type: integer
  *               eduId:
  *                 type: integer
  *     responses:
@@ -113,23 +148,34 @@ route.get("/:id", async (req, res) => {
  *       400:
  *         description: Validation error
  */
-route.post("/", async (req, res) => {
+route.post("/", Middleware, async (req, res) => {
   try {
-    let { userId, eduId } = req.body;
+    let  userId  = req.user.id;
+    let { eduId } = req.body;
+
     let schema = joi.object({
-      userId: joi.number().integer().required(),
       eduId: joi.number().integer().required(),
     });
 
-    let { error } = schema.validate({ userId, eduId });
+    let { error } = schema.validate({ eduId });
     if (error)
-      return res.status(400).json({ message: error.details[0].message });
+      return res.status(400).json({ message: error.details[0].message });    
+    let eduCenter = await EduCenter.findByPk(eduId);
+    if (!eduCenter) 
+      return res.status(404).json({ message: "Education center not found" });
 
-    await Liked.create({ userId, eduId });
-    res.json({ message: "Liked successfully" });
+    let [liked, created] = await Liked.findOrCreate({
+      where: { userId, eduId },
+    });
+
+    if (!created) {
+      return res.status(400).json({ message: "Already liked" });
+    }
+
+    res.json({ message: "Liked successfully", liked });
   } catch (error) {
     console.log(error);
-    res.status(600).json({ message: error.message });
+    res.status(500).json({ message: error.message });
     logger.error(error.message);
   }
 });
@@ -139,6 +185,7 @@ route.post("/", async (req, res) => {
  * /liked/{id}:
  *   delete:
  *     summary: Unlike an item
+ *     tags: [Liked]
  *     parameters:
  *       - in: path
  *         name: id
@@ -151,18 +198,21 @@ route.post("/", async (req, res) => {
  *       404:
  *         description: Liked item not found
  */
-route.delete("/:id", async (req, res) => {
+route.delete("/:id", Middleware, async (req, res) => {
   try {
-    let { id } = req.params;
-    let likedItem = await Liked.findByPk(id);
+    let  userId  = req.user.id;
+    let { eduId } = req.params;
+
+    let likedItem = await Liked.findOne({ where: { userId, eduId } });
+
     if (!likedItem)
       return res.status(404).json({ message: "Liked item not found" });
 
     await likedItem.destroy();
-    res.json({ message: "Liked item deleted" });
+    res.json({ message: "Liked item deleted successfully" });
   } catch (error) {
     console.log(error);
-    res.status(600).json({ message: error.message });
+    res.status(500).json({ message: error.message });
     logger.error(error.message);
   }
 });

@@ -11,6 +11,7 @@ const User = db.define("user", {
   email: {
     type: DataTypes.STRING,
     allowNull: false,
+    unique: true,
   },
   password: {
     type: DataTypes.STRING,
@@ -19,6 +20,7 @@ const User = db.define("user", {
   phone: {
     type: DataTypes.STRING,
     allowNull: false,
+    unique: true,
   },
   role: {
     type: DataTypes.STRING,
@@ -31,7 +33,17 @@ const User = db.define("user", {
   status: {
     type: DataTypes.STRING,
     allowNull: false,
-  }
+  },
+  regionId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: Region, 
+      key: "id",
+    },
+    onUpdate: "CASCADE",
+    onDelete: "SET NULL",
+  }  
 });
 
 logger.info("User model is loaded!");
@@ -39,4 +51,4 @@ logger.info("User model is loaded!");
 Region.hasMany(User, { foreignKey: "regionId" });
 User.belongsTo(Region, { foreignKey: "regionId" });
 
-module.exports = User
+module.exports = User;

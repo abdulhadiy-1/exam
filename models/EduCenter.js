@@ -23,7 +23,7 @@ const EduCenter = db.define("eduCenter", {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
-  licetion: {
+  location: {
     type: DataTypes.STRING,
     allowNull: false,
   },
@@ -35,13 +35,17 @@ const EduCenter = db.define("eduCenter", {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  fanIds: {
+  fan: {
     type: DataTypes.JSON,
     allowNull: false,
   },
-  sohaIds: {
+  soha: {
     type: DataTypes.JSON,
     allowNull: false,
+  },
+  star: {
+    type: DataTypes.JSON,
+    defaultValue: 0,
   },
 });
 

@@ -66,7 +66,7 @@ route.get("/", async (req, res) => {
     res.json({ total: categories.count, data: categories.rows });
     logger.info("All categories retrieved");
   } catch (error) {
-    res.status(600).json({ message: error.message });
+    res.status(500).json({ message: error.message });
     logger.error(error.message);
   }
 });
@@ -99,7 +99,7 @@ route.get("/:id", async (req, res) => {
     res.json(category);
     logger.info("Category retrieved by ID");
   } catch (error) {
-    res.status(600).json({ message: error.message });
+    res.status(500).json({ message: error.message });
     logger.error(error.message);
   }
 });
@@ -151,7 +151,7 @@ route.post("/", Middleware, RoleMiddleware(["admin"]), async (req, res) => {
     res.json(newCategory);
     logger.info("Category created");
   } catch (error) {
-    res.status(600).json({ message: error.message });
+    res.status(500).json({ message: error.message });
     logger.error(error.message);
   }
 });
@@ -214,7 +214,7 @@ route.patch(
       res.json(category);
       logger.info("Category updated");
     } catch (error) {
-      res.status(600).json({ message: error.message });
+      res.status(500).json({ message: error.message });
       logger.error(error.message);
     }
   }
@@ -253,7 +253,7 @@ route.delete(
       res.json({ message: "Category deleted" });
       logger.info("Category deleted");
     } catch (error) {
-      res.status(600).json({ message: error.message });
+      res.status(500).json({ message: error.message });
       logger.error(error.message);
     }
   }

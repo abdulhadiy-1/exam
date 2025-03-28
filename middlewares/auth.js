@@ -5,11 +5,11 @@ const Middleware = (req, res, next) => {
   if (!token) return res.status(401).json({ message: "Token not found." });
 
   try {
-    const decoded = jwt.verify(token, "secret");
+    const decoded = jwt.verify(token, "soz");
     req.user = decoded;
     next();
   } catch (error) {
-    return res.status(401).json({ message: "Invalid token." });
+    return res.status(401).json({ message: "Invalid token.", error });
   }
 };
 
@@ -18,7 +18,7 @@ const ReMiddleware = (req, res, next) => {
   if (!token) return res.status(401).json({ message: "Token not found." });
 
   try {
-    const decoded = jwt.verify(token, "res_secret");
+    const decoded = jwt.verify(token, "resoz");
     req.user = decoded;
     next();
   } catch (error) {

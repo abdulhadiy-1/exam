@@ -1,15 +1,21 @@
 const express = require("express");
 const { connectDb } = require("./config/db");
 const logger = require("./middlewares/logger");
+
 const RegionRoute = require("./routes/region");
 const AuthRoute = require("./routes/auth");
 const UserRoute = require("./routes/user");
 const CategoryRoute = require("./routes/category");
 const ResursRoute = require("./routes/resurs");
 const FanRoute = require("./routes/fan");
+const fillialRoute = require("./routes/fillialRoutes");
 const SohaRoute = require("./routes/soha");
+const EducRoute = require("./routes/EduCenterRoutes");
 const CourseRegisterRoute = require("./routes/courseRegister");
 const CommentRoute = require("./routes/comment");
+const LikedRoute = require("./routes/likedRoutes");
+
+
 const multer = require("multer");
 const swaggerJsDoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
@@ -100,9 +106,13 @@ app.use("/user", UserRoute);
 app.use("/category", CategoryRoute);
 app.use("/resurs", ResursRoute);
 app.use("/courseRegister", CourseRegisterRoute);
-app.use("/comments", CommentRoute);
+app.use("/comment", CommentRoute);
 app.use("/soha", SohaRoute);
 app.use("/fan", FanRoute);
+app.use("/soha", SohaRoute);
+app.use("/edu-center", EducRoute);
+app.use("/fillial", fillialRoute);
+app.use("/liked", LikedRoute);
 
 const swaggerOptions = {
   swaggerDefinition: {
