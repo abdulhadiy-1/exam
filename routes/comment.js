@@ -58,8 +58,6 @@ router.post("/", Middleware, async (req, res) => {
   } catch (error) {
     logger.error(error.message);
     res.status(500).json({ error: error.message });
-    logger.error(error.message);
-    res.status(500).json({ error: error.message });
   }
 });
 
@@ -94,8 +92,6 @@ router.get("/", async (req, res) => {
   } catch (error) {
     logger.error(error.message);
     res.status(500).json({ error: error.message });
-    logger.error(error.message);
-    res.status(500).json({ error: error.message });
   }
 });
 
@@ -124,8 +120,6 @@ router.get("/:id", async (req, res) => {
     if (!comment) return res.status(404).json({ error: "Comment not found" });
     res.json(comment);
   } catch (error) {
-    logger.error(error.message);
-    res.status(500).json({ error: error.message });
     logger.error(error.message);
     res.status(500).json({ error: error.message });
   }
@@ -180,8 +174,6 @@ router.patch("/:id", Middleware, async (req, res) => {
   } catch (error) {
     logger.error(error.message);
     res.status(500).json({ error: error.message });
-    logger.error(error.message);
-    res.status(500).json({ error: error.message });
   }
 });
 
@@ -214,8 +206,6 @@ router.delete("/:id", Middleware, async (req, res) => {
     await comment.destroy();
     res.json({ message: "Comment deleted successfully" });
   } catch (error) {
-    logger.error(error.message);
-    res.status(500).json({ error: error.message });
     logger.error(error.message);
     res.status(500).json({ error: error.message });
   }

@@ -252,7 +252,6 @@ route.post("/", Middleware, RoleMiddleware(["admin", "CEO"]), async (req, res) =
 
     res.status(201).json({ message: "Fillial created", fillial });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: error.message });
     logger.error(error.message);
   }
@@ -336,7 +335,6 @@ route.patch("/:id", Middleware, RoleMiddleware(["admin", "CEO", "super-admin"]),
 
     res.json({ message: "Fillial updated", fillial});
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: error.message });
     logger.error(error.message);
   }
@@ -388,7 +386,6 @@ route.delete(
 
       res.status(200).json({ message: "Fillial deleted successfully" });
     } catch (error) {
-      console.log(error);
       res.status(500).json({ message: error.message });
       logger.error(error.message);
     }

@@ -114,17 +114,7 @@ route.get("/", async (req, res) => {
       limit,
       data: rows
     });
-
-    res.json({
-      total: count,
-      page,
-      limit,
-      data: rows
-    });
-
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: error.message });
     res.status(500).json({ message: error.message });
     logger.error(error.message);
   }
@@ -212,8 +202,6 @@ route.get("/:id", async (req, res) => {
 
     res.json(eduCenter);
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: error.message });
     res.status(500).json({ message: error.message });
     logger.error(error.message);
   }
@@ -333,7 +321,6 @@ route.post(
 
       res.json({ message: "Education center created", eduCenter });
     } catch (error) {
-      console.error(error);
       res.status(500).json({ message: error.message });
       logger.error(error.message);
     }
@@ -461,7 +448,6 @@ route.patch(
 
       res.json({ message: "Education center updated", eduCenter });
     } catch (error) {
-      console.log(error);
       res.status(500).json({ message: error.message });
       logger.error(error.message);
     }
@@ -511,13 +497,11 @@ route.delete(
       }
 
       await EduFan.destroy({ where: { eduId: eduCenter.id } });
-      await EduSoha.destroy({ where: { eduId: eduCenter.id } });
 
       await eduCenter.destroy();
 
       res.json({ message: "Education center deleted" });
     } catch (error) {
-      console.log(error);
       res.status(500).json({ message: error.message });
       logger.error(error.message);
     }})

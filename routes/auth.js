@@ -164,7 +164,7 @@ route.post("/register", async (req, res) => {
     password: Joi.string().min(6).max(55).required(),
     phone: Joi.string().pattern(/^\+\d{12}$/).required(),
     role: Joi.string().valid("admin", "user", "super-admin", "CEO").optional(),
-    regionId: Joi.number().integer().positive().allow(null),
+    regionId: Joi.number().integer().positive().optional(),
     year: Joi.number().min(newYear - 149).max(newYear - 18).required(),
   });
 
