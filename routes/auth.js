@@ -209,6 +209,8 @@ route.post("/register", async (req, res) => {
     res.json({ newUser, message: `User created, OTP sent to ${email}!` });
     logger.info(`User created: ${email}`);
   } catch (error) {
+    console.log(error);
+    
     res.status(500).json({ message: error.message });
     logger.error(error.message);
   }
