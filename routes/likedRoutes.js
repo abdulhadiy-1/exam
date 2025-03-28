@@ -19,6 +19,7 @@ const route = Router();
  *   get:
  *     summary: Get all liked items
  *     tags: [Liked]
+ *     tags: [Liked]
  *     parameters:
  *       - in: query
  *         name: limit
@@ -51,6 +52,7 @@ route.get("/", async (req, res) => {
     let where = {};
     if (userId) {
       where.userId = userId;
+      where.userId = userId;
     }
 
     let likedItems = await Liked.findAll({
@@ -74,6 +76,7 @@ route.get("/", async (req, res) => {
     res.json(likedItems);
   } catch (error) {
     res.status(500).json({ message: error.message });
+    res.status(500).json({ message: error.message });
     logger.error(error.message);
   }
 });
@@ -83,6 +86,7 @@ route.get("/", async (req, res) => {
  * /liked/{id}:
  *   get:
  *     summary: Get a liked item by ID
+ *     tags: [Liked]
  *     tags: [Liked]
  *     parameters:
  *       - in: path
@@ -120,6 +124,7 @@ route.get("/:id", async (req, res) => {
     res.json(likedItem);
   } catch (error) {
     res.status(500).json({ message: error.message });
+    res.status(500).json({ message: error.message });
     logger.error(error.message);
   }
 });
@@ -130,6 +135,7 @@ route.get("/:id", async (req, res) => {
  *   post:
  *     summary: Like an item
  *     tags: [Liked]
+ *     tags: [Liked]
  *     requestBody:
  *       required: true
  *       content:
@@ -137,7 +143,6 @@ route.get("/:id", async (req, res) => {
  *           schema:
  *             type: object
  *             required:
- *               - userId
  *               - eduId
  *             properties:
  *               eduId:
@@ -186,6 +191,7 @@ route.post("/", Middleware, async (req, res) => {
  *   delete:
  *     summary: Unlike an item
  *     tags: [Liked]
+ *     tags: [Liked]
  *     parameters:
  *       - in: path
  *         name: id
@@ -210,6 +216,7 @@ route.delete("/:id", Middleware, async (req, res) => {
 
     await likedItem.destroy();
     res.json({ message: "Liked item deleted successfully" });
+    res.json({ message: "Liked item deleted successfully" });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: error.message });
@@ -218,3 +225,4 @@ route.delete("/:id", Middleware, async (req, res) => {
 });
 
 module.exports = route;
+

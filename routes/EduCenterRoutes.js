@@ -115,13 +115,40 @@ route.get("/", async (req, res) => {
       data: rows
     });
 
+    res.json({
+      total: count,
+      page,
+      limit,
+      data: rows
+    });
+
   } catch (error) {
     console.log(error);
+    res.status(500).json({ message: error.message });
     res.status(500).json({ message: error.message });
     logger.error(error.message);
   }
 });
 
+/**
+ * @swagger
+ * /edu-center/{id}:
+ *   get:
+ *     summary: Get an educational center by ID
+ *     tags: [EduCenters]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the educational center
+ *     responses:
+ *       200:
+ *         description: Information about the educational center
+ *       404:
+ *         description: Educational center not found
+ */
 /**
  * @swagger
  * /edu-center/{id}:
@@ -186,6 +213,7 @@ route.get("/:id", async (req, res) => {
     res.json(eduCenter);
   } catch (error) {
     console.log(error);
+    res.status(500).json({ message: error.message });
     res.status(500).json({ message: error.message });
     logger.error(error.message);
   }
@@ -492,9 +520,6 @@ route.delete(
       console.log(error);
       res.status(500).json({ message: error.message });
       logger.error(error.message);
-    }
-  }
-);
-
+    }})
 
 module.exports = route;

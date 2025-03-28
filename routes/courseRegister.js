@@ -73,9 +73,11 @@ router.post("/", Middleware, async (req, res) => {
     }
 
     const course = await CourseRegister.create({ ...req.body, userId });
+
     res.status(201).json(course);
     logger.info("A new course was added.");
   } catch (error) {
+    logger.error(error.message);
     logger.error(error.message);
     res.status(500).json({ message: error.message });
   }
@@ -133,6 +135,11 @@ router.get("/", Middleware, async (req, res) => {
         { model: Fan, attributes: ["name"] },
         { model: User, attributes: ["fullName"] },
         { model: Fillial, attributes: ["name"] },
+        { model: EduCenter, attributes: ["name"] },
+        { model: Soha, attributes: ["name"] },
+        { model: Fan, attributes: ["name"] },
+        { model: User, attributes: ["fullName"] },
+        { model: Fillial, attributes: ["name"] },
       ],
       limit,
       offset: (page - 1) * limit,
@@ -140,6 +147,7 @@ router.get("/", Middleware, async (req, res) => {
     res.json({ total: count, page, limit, data: rows });
     logger.info("The list of courses has been fetched.");
   } catch (error) {
+    logger.error(error.message);
     logger.error(error.message);
     res.status(500).json({ message: error.message });
   }
@@ -177,6 +185,7 @@ router.get("/:id", Middleware, async (req, res) => {
     logger.info("A single course has been fetched.");
   } catch (error) {
     logger.error(error.message);
+    logger.error(error.message);
     res.status(500).json({ message: error.message });
   }
 });
@@ -196,14 +205,18 @@ router.patch("/:id", Middleware, async (req, res) => {
     const course = await CourseRegister.findByPk(req.params.id);
     if (!course) return res.status(404).json({ message: "course not found." });
 
+
     if (req.user.role !== "admin" && req.user.id !== course.userId) {
       return res.status(403).json({ message: "No access." });
     }
 
+
     await course.update(req.body);
     res.json(course);
     logger.info("Course updated.");
+    logger.info("Course updated.");
   } catch (error) {
+    logger.error(error.message);
     logger.error(error.message);
     res.status(500).json({ message: error.message });
   }
@@ -220,15 +233,18 @@ router.delete("/:id", Middleware, async (req, res) => {
   try {
     const course = await CourseRegister.findByPk(req.params.id);
     if (!course) return res.status(404).json({ message: "course not found." });
-
     if (req.user.role !== "admin" && req.user.id !== course.userId) {
       return res.status(403).json({ message: "No access." });
     }
 
+
     await course.destroy();
     res.json({ message: "course deleted." });
     logger.info("Course deleted.");
-  } catch (error) {
+    logger.info("Course deleted.");
+ }
+   catch (error) {
+    logger.error(error.message);
     logger.error(error.message);
     res.status(500).json({ message: error.message });
   }
