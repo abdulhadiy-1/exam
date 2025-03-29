@@ -80,9 +80,9 @@ async function sendMail(email, otp) {
  *       403:
  *         description: Invalid or expired token
  */
-route.get("/me/:ip", Middleware, async (req, res) => {
+route.get("/me", Middleware, async (req, res) => {
   try {
-    let { ip } = req.params;
+    let ip = req.ip
 
     let session = await Session.findOne({
       where: {
@@ -330,7 +330,8 @@ route.post("/verify", async (req, res) => {
  */
 route.post("/login", async (req, res) => {
   try {
-    let { email, password, ip } = req.body;
+    let ip = req.ip
+    let { email, password } = req.body;
 
     let user = await User.findOne({ where: { email } });
     if (!user) {
