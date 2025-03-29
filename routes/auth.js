@@ -62,16 +62,10 @@ async function sendMail(email, otp) {
 
 /**
  * @swagger
- * /auth/me/{ip}:
+ * /auth/me:
  *   get:
  *     summary: Get current user info
  *     tags: [User]
- *     parameters:
- *       - in: path
- *         name: ip
- *         required: true
- *         schema:
- *           type: string
  *     responses:
  *       200:
  *         description: User info retrieved successfully
@@ -319,8 +313,6 @@ route.post("/verify", async (req, res) => {
  *               email:
  *                 type: string
  *               password:
- *                 type: string
- *               ip:
  *                 type: string
  *     responses:
  *       200:
