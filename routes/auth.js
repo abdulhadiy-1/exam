@@ -12,7 +12,6 @@ const Session = require("../models/session");
 const DeviceDetector = require("device-detector-js");
 const deviceDetector = new DeviceDetector();
 
-
 const {
   generateAccessToken,
   generateRefreshToken,
@@ -77,7 +76,6 @@ async function sendMail(email, otp) {
 route.get("/me", Middleware, async (req, res) => {
   try {
     let ip = req.ip
-
     let session = await Session.findOne({
       where: {
         [Op.and]: [{ ip }, { userId: req.user.id }],
@@ -85,7 +83,9 @@ route.get("/me", Middleware, async (req, res) => {
     });
 
     if (!session) {
-      return res.status(400).json({ message: "No sessions found, please login" });
+      return res
+        .status(400)
+        .json({ message: "No sessions found, please login" });
     }
 
     const user = await User.findByPk(session.userId, {
@@ -156,10 +156,15 @@ route.post("/register", async (req, res) => {
     fullName: Joi.string().min(2).max(55).required(),
     email: Joi.string().email().required(),
     password: Joi.string().min(6).max(55).required(),
-    phone: Joi.string().pattern(/^\+\d{12}$/).required(),
+    phone: Joi.string()
+      .pattern(/^\+\d{12}$/)
+      .required(),
     role: Joi.string().valid("admin", "user", "super-admin", "CEO").optional(),
     regionId: Joi.number().integer().positive().optional(),
-    year: Joi.number().min(newYear - 149).max(newYear - 18).required(),
+    year: Joi.number()
+      .min(newYear - 149)
+      .max(newYear - 18)
+      .required(),
   });
 
   const { error } = schema.validate(req.body);
@@ -172,12 +177,16 @@ route.post("/register", async (req, res) => {
   try {
     let user = await User.findOne({ where: { email } });
     if (user) {
-      return res.status(400).json({ message: "User with this email already exists" });
+      return res
+        .status(400)
+        .json({ message: "User with this email already exists" });
     }
 
     let phoneUser = await User.findOne({ where: { phone } });
     if (phoneUser) {
-      return res.status(400).json({ message: "User with this phone number already exists" });
+      return res
+        .status(400)
+        .json({ message: "User with this phone number already exists" });
     }
 
     if (role !== "admin") {
@@ -194,7 +203,7 @@ route.post("/register", async (req, res) => {
       ...req.body,
       password: hash,
       role,
-      regionId: role === "admin" ? null : regionId, 
+      regionId: role === "admin" ? null : regionId,
       status: "pending",
     });
 
@@ -204,13 +213,11 @@ route.post("/register", async (req, res) => {
     logger.info(`User created: ${email}`);
   } catch (error) {
     console.log(error);
-    
+
     res.status(500).json({ message: error.message });
     logger.error(error.message);
   }
 });
-
-
 
 /**
  * @swagger
@@ -322,12 +329,14 @@ route.post("/verify", async (req, res) => {
  */
 route.post("/login", async (req, res) => {
   try {
-    let ip = req.ip
+    let ip = req.ip;
     let { email, password } = req.body;
 
     let user = await User.findOne({ where: { email } });
     if (!user) {
-      return res.status(404).json({ message: "User with this email not found" });
+      return res
+        .status(404)
+        .json({ message: "User with this email not found" });
     }
 
     if (user.status !== "active") {
@@ -350,7 +359,7 @@ route.post("/login", async (req, res) => {
       await Session.create({
         userId: user.id,
         ip,
-        data: deviceData, 
+        data: deviceData,
       });
     }
 
@@ -364,8 +373,6 @@ route.post("/login", async (req, res) => {
     logger.error(error.message);
   }
 });
-
-
 
 /**
  * @swagger
@@ -408,7 +415,8 @@ route.get("/my-sessions", Middleware, async (req, res) => {
 route.delete("/delete-session/:id", Middleware, async (req, res) => {
   try {
     let sessions = await Session.findByPk(req.params.id);
-    if (!sessions) return res.status(404).send({ message: "session not found" });
+    if (!sessions)
+      return res.status(404).send({ message: "session not found" });
     await sessions.destroy();
     res.send({ message: "session deleted" });
   } catch (error) {

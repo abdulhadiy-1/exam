@@ -97,6 +97,12 @@ route.get("/", async (req, res) => {
           attributes: ["id", "name"]
         }
       ],
+      attributes: [
+        "id",
+        "name",
+        "phone",
+        "location",
+      ],
       limit,
       offset,
     });
@@ -155,6 +161,12 @@ route.get("/:id", async (req, res) => {
           as: "region",
           attributes: ["id", "name"]
         }
+      ],
+      attributes: [
+        "id",
+        "name",
+        "phone",
+        "location",
       ]
     });
 

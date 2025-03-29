@@ -11,6 +11,8 @@ const EduSoha = require("../models/eduSoha");
 const Region = require("../models/region");
 const Comment = require("../models/comment");
 const User = require("../models/user");
+const fillial = require("../models/fillial");
+const Liked = require("../models/liked");
 
 const route = Router();
 /**
@@ -79,6 +81,16 @@ route.get("/", async (req, res) => {
           model: Region,
           as: "region",
           attributes: ["id", "name"]
+        },
+        {
+          model: fillial,
+          as: "fillials",
+          attributes: ["id", "name"]
+        },
+        {
+          model: Liked,
+          as: "liked",
+          attributes: ["id"],
         },
         {
           model: Comment,
@@ -177,10 +189,21 @@ route.get("/:id", async (req, res) => {
           attributes: ["id", "name"],
           through: { attributes: [] }
         },
+
         {
           model: Region,
           as: "region",
           attributes: ["id", "name"]
+        },
+        {
+          model: fillial,
+          as: "fillials",
+          attributes: ["id", "name"]
+        },
+        {
+          model: Liked,
+          as: "liked",
+          attributes: ["id"],
         },
         {
           model: Comment,
