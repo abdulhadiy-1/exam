@@ -89,7 +89,7 @@ route.get("/", async (req, res) => {
         },
         {
           model: Liked,
-          as: "likedlar",
+          as: "likes",
           attributes: ["id"],
         },
         {
@@ -201,7 +201,7 @@ route.get("/:id", async (req, res) => {
         },
         {
           model: Liked,
-          as: "likedlar",
+          as: "likes",
           attributes: ["id"],
         },
         {
