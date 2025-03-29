@@ -90,7 +90,14 @@ route.get("/", async (req, res) => {
         {
           model: Liked,
           as: "likes",
-          attributes: ["id"],
+          attributes: ["id", "userId"],
+          include: [
+            {
+              model: User,
+              as: "user",
+              attributes: ["id", "fullName"],
+            },
+          ],
         },
         {
           model: Comment,
