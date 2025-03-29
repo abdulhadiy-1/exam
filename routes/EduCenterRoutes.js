@@ -59,7 +59,7 @@ route.get("/", async (req, res) => {
 
     let where = {};
     if (name) {
-      where.name = { [Op.startsWith]: name }; 
+      where.name = { [Op.startsWith]: name };
     }
 
     let { count, rows } = await EduCenter.findAndCountAll({
@@ -69,27 +69,27 @@ route.get("/", async (req, res) => {
           model: Fan,
           as: "fans",
           attributes: ["id", "name"],
-          through: { attributes: [] }
+          through: { attributes: [] },
         },
         {
           model: Soha,
           as: "sohas",
           attributes: ["id", "name"],
-          through: { attributes: [] }
+          through: { attributes: [] },
         },
         {
           model: Region,
           as: "region",
-          attributes: ["id", "name"]
+          attributes: ["id", "name"],
         },
         {
           model: fillial,
           as: "fillials",
-          attributes: ["id", "name"]
+          attributes: ["id", "name"],
         },
         {
           model: Liked,
-          as: "liked",
+          as: "likedlar",
           attributes: ["id"],
         },
         {
@@ -100,10 +100,10 @@ route.get("/", async (req, res) => {
             {
               model: User,
               as: "user",
-              attributes: ["id", "fullName", "email"]
-            }
-          ]
-        }
+              attributes: ["id", "fullName", "email"],
+            },
+          ],
+        },
       ],
       attributes: [
         "id",
@@ -114,17 +114,16 @@ route.get("/", async (req, res) => {
         "star",
         "createdAt",
         "updatedAt",
-
       ],
-      limit, 
-      offset
+      limit,
+      offset,
     });
 
     res.json({
       total: count,
       page,
       limit,
-      data: rows
+      data: rows,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -181,28 +180,28 @@ route.get("/:id", async (req, res) => {
           model: Fan,
           as: "fans",
           attributes: ["id", "name"],
-          through: { attributes: [] }
+          through: { attributes: [] },
         },
         {
           model: Soha,
           as: "sohas",
           attributes: ["id", "name"],
-          through: { attributes: [] }
+          through: { attributes: [] },
         },
 
         {
           model: Region,
           as: "region",
-          attributes: ["id", "name"]
+          attributes: ["id", "name"],
         },
         {
           model: fillial,
           as: "fillials",
-          attributes: ["id", "name"]
+          attributes: ["id", "name"],
         },
         {
           model: Liked,
-          as: "liked",
+          as: "likedlar",
           attributes: ["id"],
         },
         {
@@ -213,11 +212,11 @@ route.get("/:id", async (req, res) => {
             {
               model: User,
               as: "user",
-              attributes: ["id", "fullName", "email"]
-            }
-          ]
-        }
-      ]
+              attributes: ["id", "fullName", "email"],
+            },
+          ],
+        },
+      ],
     });
 
     if (!eduCenter)
@@ -229,7 +228,6 @@ route.get("/:id", async (req, res) => {
     logger.error(error.message);
   }
 });
-
 
 /**
  * @swagger
@@ -309,7 +307,7 @@ route.post(
         return res.status(400).json({ message: error.details[0].message });
       }
       const region = await Region.findByPk(regionId);
-      if (!region) {  
+      if (!region) {
         return res.status(404).json({ message: "Region not found" });
       }
       const foundFans = await Fan.findAll({ where: { id: fan } });
@@ -337,9 +335,7 @@ route.post(
         fan.map((fanId) => EduFan.create({ fanId, eduId: eduCenter.id }))
       );
       await Promise.all(
-        soha.map((sohaId) =>
-          EduSoha.create({ sohaId, eduId: eduCenter.id })
-        )
+        soha.map((sohaId) => EduSoha.create({ sohaId, eduId: eduCenter.id }))
       );
 
       res.json({ message: "Education center created", eduCenter });
@@ -463,9 +459,7 @@ route.patch(
       if (soha) {
         await EduSoha.destroy({ where: { eduId: eduCenter.id } });
         await Promise.all(
-          soha.map((sohaId) =>
-            EduSoha.create({ sohaId, eduId: eduCenter.id })
-          )
+          soha.map((sohaId) => EduSoha.create({ sohaId, eduId: eduCenter.id }))
         );
       }
 
@@ -476,7 +470,6 @@ route.patch(
     }
   }
 );
-
 
 /**
  * @swagger
@@ -527,6 +520,8 @@ route.delete(
     } catch (error) {
       res.status(500).json({ message: error.message });
       logger.error(error.message);
-    }})
+    }
+  }
+);
 
 module.exports = route;
