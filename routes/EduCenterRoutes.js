@@ -68,34 +68,29 @@ route.get("/", async (req, res) => {
         {
           model: Fan,
           as: "fans",
-          attributes: ["id", "name"],
           through: { attributes: [] },
         },
         {
           model: Soha,
           as: "sohas",
-          attributes: ["id", "name"],
           through: { attributes: [] },
         },
         {
           model: Region,
           as: "region",
-          attributes: ["id", "name"],
         },
         {
           model: fillial,
           as: "fillials",
-          attributes: ["id", "name"],
         },
         {
           model: Liked,
           as: "likes",
-          attributes: ["id", "userId"],
           include: [
             {
               model: User,
               as: "user",
-              attributes: ["id", "fullName"],
+              attributes: ["id", "fullName", "email"],
             },
           ],
         },
@@ -186,30 +181,32 @@ route.get("/:id", async (req, res) => {
         {
           model: Fan,
           as: "fans",
-          attributes: ["id", "name"],
           through: { attributes: [] },
         },
         {
           model: Soha,
           as: "sohas",
-          attributes: ["id", "name"],
           through: { attributes: [] },
         },
 
         {
           model: Region,
           as: "region",
-          attributes: ["id", "name"],
         },
         {
           model: fillial,
           as: "fillials",
-          attributes: ["id", "name"],
         },
         {
           model: Liked,
           as: "likes",
-          attributes: ["id"],
+          include: [
+            {
+              model: User,
+              as: "user",
+              attributes: ["id", "fullName", "email"],
+            },
+          ],
         },
         {
           model: Comment,
@@ -294,7 +291,9 @@ route.post(
         image: joi.string().min(2).required(),
         regionId: joi.number().min(0).required(),
         location: joi.string().min(2).required(),
-        phone: joi.string().min(7).required(),
+            phone: joi.string()
+              .pattern(/^\+\d{12}$/)
+              .required(),
         name: joi.string().min(2).required(),
         fan: joi.array().items(joi.number()).required(),
         soha: joi.array().items(joi.number()).required(),
@@ -429,7 +428,8 @@ route.patch(
         image: joi.string().min(2),
         regionId: joi.number().integer(),
         location: joi.string().min(2),
-        phone: joi.string().min(7),
+            phone: joi.string()
+              .pattern(/^\+\d{12}$/),
         name: joi.string().min(2),
         fan: joi.array().items(joi.number()),
         soha: joi.array().items(joi.number()),

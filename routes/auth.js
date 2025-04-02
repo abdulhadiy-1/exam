@@ -88,9 +88,7 @@ route.get("/me", Middleware, async (req, res) => {
         .json({ message: "No sessions found, please login" });
     }
 
-    const user = await User.findByPk(session.userId, {
-      attributes: ["id", "fullName", "email", "phone", "role", "status"],
-    });
+    const user = await User.findByPk(session.userId);
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });

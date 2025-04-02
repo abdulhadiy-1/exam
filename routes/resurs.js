@@ -123,9 +123,9 @@ const resursPostSchema = Joi.object({
 });
 /**
  * @swagger
- * /resurs/{id}:
- *   patch:
- *     summary: Получить ресурс по ID
+ * /resurs:
+ *   post:
+ *     summary: Создать ресурс
  *     tags: [Resources]
  *     requestBody:
  *       required: true
@@ -149,7 +149,7 @@ const resursPostSchema = Joi.object({
  *       200:
  *         description: Ресурс создан
  *       400:
- *         description: Ошибка валидации
+ *         description: Ошибка валидации или категория не найдена
  *       401:
  *         description: Неавторизован
  *       500:
@@ -157,25 +157,33 @@ const resursPostSchema = Joi.object({
  */
 route.post("/", Middleware, async (req, res) => {
   try {
-    if (!req.user) return res.status(401).json({ message: "Unauthorized" });
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
 
     const { error } = resursPostSchema.validate(req.body);
-    if (error) return res.status(400).json({ message: error.details[0].message });
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
 
     const userId = req.user.id;
     const { categoryId, name, media, description } = req.body;
 
-    let category = await Category.findByPk(categoryId);
-    if (!category) return res.status(400).json({ message: "Category not found" });
+    const category = await Category.findByPk(categoryId);
+    if (!category) {
+      return res.status(400).json({ message: "Category not found" });
+    }
 
     const newResurs = await Resurs.create({ name, media, description, categoryId, userId });
-    res.json(newResurs);
-    logger.info("Resource created");
+
+    res.status(201).json(newResurs);
+    logger.info("Resource created successfully");
   } catch (error) {
-    res.status(500).json({ message: error.message });
-    logger.error(error.message);
+    logger.error(error); 
+    res.status(500).json({ message: "Internal Server Error" });
   }
 });
+
 
 const resursPatchSchema = Joi.object({
   name: Joi.string().min(2).max(55).optional(),

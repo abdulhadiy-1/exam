@@ -76,25 +76,21 @@ route.get("/", async (req, res) => {
       include: [
         {
           model: EduCenter,
-          attributes: ["id", "name"],
           where: eduwhere
         },
         {
           model: Fan,
           as: "fanlars",
-          attributes: ["id", "name"],
           through: { attributes: [] } 
         },
         {
           model: Soha,
           as: "sohalars",
-          attributes: ["id", "name"],
           through: { attributes: [] }
         },
         {
           model: Region,
           as: "region",
-          attributes: ["id", "name"]
         }
       ],
       attributes: [
@@ -142,24 +138,20 @@ route.get("/:id", async (req, res) => {
       include: [
         {
           model: EduCenter,
-          attributes: ["id", "name"]
         },
         {
           model: Fan,
           as: "fanlars",
-          attributes: ["id", "name"],
           through: { attributes: [] }
         },
         {
           model: Soha,
           as: "sohalars",
-          attributes: ["id", "name"],
           through: { attributes: [] }
         },
         {
           model: Region,
           as: "region",
-          attributes: ["id", "name"]
         }
       ],
       attributes: [
@@ -233,7 +225,9 @@ route.post("/", Middleware, RoleMiddleware(["admin", "CEO"]), async (req, res) =
     
     let schema = joi.object({
       name: joi.string().min(2).required(),
-      phone: joi.string().min(7).required(),
+          phone: joi.string()
+            .pattern(/^\+\d{12}$/)
+            .required(),
       location: joi.string().min(2).required(),
       regionId: joi.number().integer().required(),
       fanlar: joi.array().items(joi.number()).required(),
@@ -328,7 +322,8 @@ route.patch("/:id", Middleware, RoleMiddleware(["admin", "CEO", "super-admin"]),
 
     let schema = joi.object({
       name: joi.string().min(2),
-      phone: joi.string().min(7),
+          phone: joi.string()
+            .pattern(/^\+\d{12}$/),
       location: joi.string().min(2),
       regionId: joi.number().integer(),
       image: joi.string().min(2),
