@@ -207,7 +207,7 @@ route.post("/register", async (req, res) => {
 
     await sendMail(email, otp);
 
-    res.json({ newUser, message: `User created, OTP sent to ${email}!` });
+    res.json({ newUser, message: `User created, OTP sent to ${email}!, ${otp}` });
     logger.info(`User created: ${email}`);
   } catch (error) {
     console.log(error);
